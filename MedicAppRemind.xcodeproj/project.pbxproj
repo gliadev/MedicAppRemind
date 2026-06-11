@@ -14,35 +14,53 @@
 			remoteGlobalIDString = 9108F5992FD8C84400FF6EAA;
 			remoteInfo = MedicAppRemind;
 		};
-		9108F5B42FD8C84600FF6EAA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9108F5922FD8C84400FF6EAA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9108F5992FD8C84400FF6EAA;
-			remoteInfo = MedicAppRemind;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		9108F59A2FD8C84400FF6EAA /* MedicAppRemind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedicAppRemind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9108F5A92FD8C84600FF6EAA /* MedicAppRemindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedicAppRemindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9108F5B32FD8C84600FF6EAA /* MedicAppRemindUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedicAppRemindUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9108F6092FD8DD3800FF6EAA /* Exceptions for "MedicAppRemind" folder in "MedicAppRemind" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/.gitkeep,
+				DesignSystem/Colors/.gitkeep,
+				DesignSystem/Components/.gitkeep,
+				DesignSystem/Typography/.gitkeep,
+				Domain/DoseMath/.gitkeep,
+				Domain/Entities/.gitkeep,
+				Domain/Errors/.gitkeep,
+				Features/MedicationDetail/.gitkeep,
+				Features/MedicationEditor/.gitkeep,
+				Features/MedicationList/.gitkeep,
+				Features/Today/.gitkeep,
+				Info.plist,
+				Persistence/Migrations/.gitkeep,
+				Persistence/ModelActor/.gitkeep,
+				Persistence/Schema/.gitkeep,
+				Resources/.gitkeep,
+				Services/Calendar/.gitkeep,
+				Services/Intents/.gitkeep,
+				Services/Notifications/.gitkeep,
+			);
+			target = 9108F5992FD8C84400FF6EAA /* MedicAppRemind */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9108F59C2FD8C84400FF6EAA /* MedicAppRemind */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9108F6092FD8DD3800FF6EAA /* Exceptions for "MedicAppRemind" folder in "MedicAppRemind" target */,
+			);
 			path = MedicAppRemind;
 			sourceTree = "<group>";
 		};
 		9108F5AC2FD8C84600FF6EAA /* MedicAppRemindTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MedicAppRemindTests;
-			sourceTree = "<group>";
-		};
-		9108F5B62FD8C84600FF6EAA /* MedicAppRemindUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MedicAppRemindUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,13 +80,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9108F5B02FD8C84600FF6EAA /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -77,7 +88,6 @@
 			children = (
 				9108F59C2FD8C84400FF6EAA /* MedicAppRemind */,
 				9108F5AC2FD8C84600FF6EAA /* MedicAppRemindTests */,
-				9108F5B62FD8C84600FF6EAA /* MedicAppRemindUITests */,
 				9108F59B2FD8C84400FF6EAA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -87,7 +97,6 @@
 			children = (
 				9108F59A2FD8C84400FF6EAA /* MedicAppRemind.app */,
 				9108F5A92FD8C84600FF6EAA /* MedicAppRemindTests.xctest */,
-				9108F5B32FD8C84600FF6EAA /* MedicAppRemindUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,29 +149,6 @@
 			productReference = 9108F5A92FD8C84600FF6EAA /* MedicAppRemindTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		9108F5B22FD8C84600FF6EAA /* MedicAppRemindUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9108F5C32FD8C84600FF6EAA /* Build configuration list for PBXNativeTarget "MedicAppRemindUITests" */;
-			buildPhases = (
-				9108F5AF2FD8C84600FF6EAA /* Sources */,
-				9108F5B02FD8C84600FF6EAA /* Frameworks */,
-				9108F5B12FD8C84600FF6EAA /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				9108F5B52FD8C84600FF6EAA /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				9108F5B62FD8C84600FF6EAA /* MedicAppRemindUITests */,
-			);
-			name = MedicAppRemindUITests;
-			packageProductDependencies = (
-			);
-			productName = MedicAppRemindUITests;
-			productReference = 9108F5B32FD8C84600FF6EAA /* MedicAppRemindUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,10 +163,6 @@
 						CreatedOnToolsVersion = 26.5;
 					};
 					9108F5A82FD8C84600FF6EAA = {
-						CreatedOnToolsVersion = 26.5;
-						TestTargetID = 9108F5992FD8C84400FF6EAA;
-					};
-					9108F5B22FD8C84600FF6EAA = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = 9108F5992FD8C84400FF6EAA;
 					};
@@ -202,7 +184,6 @@
 			targets = (
 				9108F5992FD8C84400FF6EAA /* MedicAppRemind */,
 				9108F5A82FD8C84600FF6EAA /* MedicAppRemindTests */,
-				9108F5B22FD8C84600FF6EAA /* MedicAppRemindUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -216,13 +197,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9108F5A72FD8C84600FF6EAA /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9108F5B12FD8C84600FF6EAA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,13 +220,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9108F5AF2FD8C84600FF6EAA /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -260,11 +227,6 @@
 			isa = PBXTargetDependency;
 			target = 9108F5992FD8C84400FF6EAA /* MedicAppRemind */;
 			targetProxy = 9108F5AA2FD8C84600FF6EAA /* PBXContainerItemProxy */;
-		};
-		9108F5B52FD8C84600FF6EAA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9108F5992FD8C84400FF6EAA /* MedicAppRemind */;
-			targetProxy = 9108F5B42FD8C84600FF6EAA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -316,6 +278,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -330,6 +293,9 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -374,6 +340,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -386,6 +353,9 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -395,11 +365,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MedicAppRemind/MedicAppRemind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M968R2AMGD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MedicAppRemind/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -414,10 +386,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -427,11 +399,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MedicAppRemind/MedicAppRemind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M968R2AMGD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MedicAppRemind/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -446,10 +420,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -470,7 +444,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MedicAppRemind.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MedicAppRemind";
 			};
@@ -492,49 +466,9 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MedicAppRemind.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MedicAppRemind";
-			};
-			name = Release;
-		};
-		9108F5C42FD8C84600FF6EAA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = M968R2AMGD;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gliadev.MedicAppRemindUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MedicAppRemind;
-			};
-			name = Debug;
-		};
-		9108F5C52FD8C84600FF6EAA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = M968R2AMGD;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gliadev.MedicAppRemindUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MedicAppRemind;
 			};
 			name = Release;
 		};
@@ -564,15 +498,6 @@
 			buildConfigurations = (
 				9108F5C12FD8C84600FF6EAA /* Debug */,
 				9108F5C22FD8C84600FF6EAA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		9108F5C32FD8C84600FF6EAA /* Build configuration list for PBXNativeTarget "MedicAppRemindUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9108F5C42FD8C84600FF6EAA /* Debug */,
-				9108F5C52FD8C84600FF6EAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
