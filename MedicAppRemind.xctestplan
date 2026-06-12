@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "8CA55DEE-156D-4299-A007-8ADAF21C477E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:MedicAppRemind.xcodeproj",
+      "identifier" : "9108F5992FD8C84400FF6EAA",
+      "name" : "MedicAppRemind"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:MedicAppRemind.xcodeproj",
+        "identifier" : "9108F5A82FD8C84600FF6EAA",
+        "name" : "MedicAppRemindTests"
+      }
+    }
+  ],
+  "version" : 1
+}
