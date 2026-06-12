@@ -19,6 +19,7 @@
 /* Begin PBXFileReference section */
 		9108F59A2FD8C84400FF6EAA /* MedicAppRemind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedicAppRemind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9108F5A92FD8C84600FF6EAA /* MedicAppRemindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedicAppRemindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		91D6215C2FDC4A1800D0D808 /* MedicAppRemind.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MedicAppRemind.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -86,6 +87,7 @@
 		9108F5912FD8C84400FF6EAA = {
 			isa = PBXGroup;
 			children = (
+				91D6215C2FDC4A1800D0D808 /* MedicAppRemind.xctestplan */,
 				9108F59C2FD8C84400FF6EAA /* MedicAppRemind */,
 				9108F5AC2FD8C84600FF6EAA /* MedicAppRemindTests */,
 				9108F59B2FD8C84400FF6EAA /* Products */,
@@ -292,6 +294,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -353,6 +356,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;

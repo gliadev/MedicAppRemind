@@ -18,7 +18,9 @@ struct MedicationListView: View {
         @Bindable var router = router
         NavigationStack(path: $router.path) {
             List(medications) { medication in
-                MedicationRow(model: medication)
+                NavigationLink(value: medication.id) {
+                    MedicationRow(model: medication)
+                }
             }
             .navigationTitle("Medicamentos")
             .navigationDestination(for: UUID.self) { medicationID in

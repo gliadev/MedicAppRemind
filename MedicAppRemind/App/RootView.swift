@@ -36,11 +36,19 @@ struct RootView: View {
     }
 
     var body: some View {
-        MedicationListView()
-            .modelContainer(container)
-            .environment(router)
-            .environment(\.calendarSync, calendarSync)
-            .task { await bootstrapNotifications() }
+        TabView {
+            Tab("Hoy", systemImage: "calendar") {
+                TodayView()
+            }
+            Tab("Medicamentos", systemImage: "pills") {
+                MedicationListView()
+            }
+        }
+        .modelContainer(container)
+        .environment(router)
+        .environment(\.calendarSync, calendarSync)
+        .environment(\.medicationStore, store)
+        .task { await bootstrapNotifications() }
     }
 
     /// Builds the notification stack once and primes it: delegate, category,

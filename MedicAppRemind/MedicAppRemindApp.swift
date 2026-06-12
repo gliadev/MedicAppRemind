@@ -10,11 +10,11 @@ import SwiftData
 
 @main
 struct MedicAppRemindApp: App {
-    /// The shared on-disk container. Built once at launch; the same container
-    /// backs the UI's `@Query` and the `MedicationStoreActor` writes, so the
-    /// list stays reactive. `try?` because a failed store is handled in the UI
-    /// rather than crashing (no force-unwrap).
-    private let container: ModelContainer? = try? PersistenceController().container
+    /// The shared on-disk container, resolved from `PersistenceController.shared`
+    /// so the SwiftUI app and the App Intents runtime use the *same* container:
+    /// a dose logged by an intent propagates to this UI's `@Query`. `?` because a
+    /// failed store is handled in the UI rather than crashing (no force-unwrap).
+    private let container: ModelContainer? = PersistenceController.shared?.container
 
     var body: some Scene {
         WindowGroup {

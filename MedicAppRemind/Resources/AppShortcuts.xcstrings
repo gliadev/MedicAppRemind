@@ -1,7 +1,34 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-
+    "Cuántas pastillas me quedan en ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Cuántas pastillas me quedan en ${applicationName}",
+              "Consulta mi stock con ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Registra una toma en ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Registra una toma en ${applicationName}",
+              "He tomado mi medicación con ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
   },
   "version" : "1.2"
 }

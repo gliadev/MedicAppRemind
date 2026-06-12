@@ -24,7 +24,7 @@ struct AccessibilityDescriptionTests {
         #expect(description.contains(med.name))
         #expect(description.contains(med.doseLabel))
         #expect(description.contains("30"))
-        #expect(description.localizedCaseInsensitiveContains("stock correcto"))
+        #expect(description.contains("stock correcto"))
     }
 
     @Test("low — includes name, days, and 'stock bajo'")
@@ -34,7 +34,7 @@ struct AccessibilityDescriptionTests {
         let description = med.accessibilityDescription(for: daily)
         #expect(description.contains(med.name))
         #expect(description.contains("5"))
-        #expect(description.localizedCaseInsensitiveContains("stock bajo"))
+        #expect(description.contains("stock bajo"))
     }
 
     @Test("critical — includes name and 'sin stock'")
@@ -43,7 +43,7 @@ struct AccessibilityDescriptionTests {
         let med = makeMedication(currentStock: 0, lowStockThresholdDays: 7)
         let description = med.accessibilityDescription(for: daily)
         #expect(description.contains(med.name))
-        #expect(description.localizedCaseInsensitiveContains("sin stock"))
+        #expect(description.contains("sin stock"))
     }
 
     @Test("unknown — empty times schedule produces 'sin pauta'")
@@ -53,6 +53,6 @@ struct AccessibilityDescriptionTests {
         let med = makeMedication()
         let description = med.accessibilityDescription(for: noTimes)
         #expect(description.contains(med.name))
-        #expect(description.localizedCaseInsensitiveContains("sin pauta"))
+        #expect(description.contains("sin pauta"))
     }
 }
