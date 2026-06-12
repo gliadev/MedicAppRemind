@@ -26,6 +26,12 @@ final class MedicationModel {
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
 
+    /// JSON-encoded `[String]` of calendar `eventIdentifier`s mirrored for this
+    /// medication (F4.S2), or `nil` when it isn't mirrored. Stored as `Data?` so the
+    /// schema stays CloudKit-safe (optional, defaulted). Access it through the decoded
+    /// `calendarEventIDs` convenience rather than this raw field.
+    var calendarEventIDsData: Data? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \DoseScheduleModel.medication)
     var schedules: [DoseScheduleModel]? = []
 

@@ -20,13 +20,26 @@ import UserNotifications
 struct RootView: View {
     let container: ModelContainer
 
+    /// The single store actor over the shared container, reused by the notification
+    /// bootstrap and by calendar sync so both write through the same off-main path.
+    private let store: MedicationStoreActor
+    private let calendarSync: CalendarSyncService
+
     @State private var router = AppRouter()
     @State private var coordinator: NotificationCoordinator?
+
+    init(container: ModelContainer) {
+        self.container = container
+        let store = MedicationStoreActor(modelContainer: container)
+        self.store = store
+        self.calendarSync = CalendarSyncService(calendarService: CalendarService(), store: store)
+    }
 
     var body: some View {
         MedicationListView()
             .modelContainer(container)
             .environment(router)
+            .environment(\.calendarSync, calendarSync)
             .task { await bootstrapNotifications() }
     }
 
@@ -35,7 +48,6 @@ struct RootView: View {
     /// when the coordinator already exists is a no-op.
     private func bootstrapNotifications() async {
         guard coordinator == nil else { return }
-        let store = MedicationStoreActor(modelContainer: container)
         let service = NotificationService()
         let coordinator = NotificationCoordinator(store: store, notificationService: service, router: router)
         self.coordinator = coordinator

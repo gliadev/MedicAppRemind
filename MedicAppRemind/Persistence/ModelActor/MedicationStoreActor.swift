@@ -98,6 +98,31 @@ actor MedicationStoreActor {
         try existingMedication(id: id)?.toDomain()
     }
 
+    /// The medication with this `id` paired with its decoded schedules — the input
+    /// CalendarSyncService needs to build calendar events. A schedule whose stored
+    /// payload is corrupted is skipped. `nil` when the medication is unknown.
+    func plan(id: UUID) throws -> MedicationPlan? {
+        guard let model = try existingMedication(id: id) else { return nil }
+        let schedules = (model.schedules ?? []).compactMap { try? $0.toDomain() }
+        return MedicationPlan(medication: model.toDomain(), schedules: schedules)
+    }
+
+    /// The calendar `eventIdentifier`s currently mirrored for this medication (F4.S2),
+    /// or `[]` when it isn't mirrored or the medication is unknown.
+    func calendarEventIDs(medicationID: UUID) throws -> [String] {
+        try existingMedication(id: medicationID)?.calendarEventIDs ?? []
+    }
+
+    /// Records the calendar `eventIdentifier`s now mirrored for this medication,
+    /// replacing any previous set. An empty array clears the field. A missing id is a
+    /// no-op.
+    func setCalendarEventIDs(_ identifiers: [String], medicationID: UUID) throws {
+        guard let model = try existingMedication(id: medicationID) else { return }
+        model.calendarEventIDs = identifiers
+        model.updatedAt = .now
+        try modelContext.save()
+    }
+
     // MARK: - Helpers
 
     private func existingMedication(id: UUID) throws -> MedicationModel? {
