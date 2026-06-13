@@ -14,6 +14,8 @@ struct MedicationListView: View {
     @Environment(AppRouter.self) private var router
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
 
+    @State private var showingAddEditor = false
+
     var body: some View {
         @Bindable var router = router
         NavigationStack(path: $router.path) {
@@ -26,6 +28,13 @@ struct MedicationListView: View {
             .navigationDestination(for: UUID.self) { medicationID in
                 MedicationDetailView(medicationID: medicationID)
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Añadir medicamento", systemImage: "plus") {
+                        showingAddEditor = true
+                    }
+                }
+            }
             .overlay {
                 if medications.isEmpty {
                     ContentUnavailableView(
@@ -35,6 +44,9 @@ struct MedicationListView: View {
                     )
                 }
             }
+        }
+        .sheet(isPresented: $showingAddEditor) {
+            MedicationEditorView()
         }
     }
 }

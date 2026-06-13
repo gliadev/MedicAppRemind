@@ -24,6 +24,7 @@ struct MedicationDetailView: View {
 
     @State private var isRecording = false
     @State private var errorMessage: String?
+    @State private var showingEditor = false
 
     let medicationID: UUID
 
@@ -110,9 +111,11 @@ struct MedicationDetailView: View {
         .navigationTitle(medication.name)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Editar") { }
-                    .disabled(true)
+                Button("Editar") { showingEditor = true }
             }
+        }
+        .sheet(isPresented: $showingEditor) {
+            MedicationEditorView(medication: medication, schedule: schedules.first)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             registerDoseButton(for: medication)
@@ -146,7 +149,7 @@ struct MedicationDetailView: View {
             .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
-            .accessibilityAction(named: "Editar") { }
+            .accessibilityAction(named: "Editar") { showingEditor = true }
         }
     }
 
