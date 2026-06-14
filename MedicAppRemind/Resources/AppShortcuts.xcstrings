@@ -1,12 +1,20 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "es",
   "strings" : {
     "Cuántas pastillas me quedan en ${applicationName}" : {
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringSet" : {
-            "state" : "new",
+            "state" : "translated",
+            "values" : [
+              "How many pills do I have left in ${applicationName}",
+              "Check my stock with ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
             "values" : [
               "Cuántas pastillas me quedan en ${applicationName}",
               "Consulta mi stock con ${applicationName}"
@@ -16,11 +24,19 @@
       }
     },
     "Registra una toma en ${applicationName}" : {
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringSet" : {
-            "state" : "new",
+            "state" : "translated",
+            "values" : [
+              "Log a dose in ${applicationName}",
+              "I took my medication with ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
             "values" : [
               "Registra una toma en ${applicationName}",
               "He tomado mi medicación con ${applicationName}"

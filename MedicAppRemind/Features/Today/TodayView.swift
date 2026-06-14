@@ -13,6 +13,7 @@ import SwiftData
 
 struct TodayView: View {
     @Environment(\.medicationStore) private var store
+    @Environment(\.cloudSyncMonitor) private var cloudSyncMonitor
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
     @Query private var todayLogs: [IntakeLogModel]
 
@@ -49,11 +50,15 @@ struct TodayView: View {
                         .padding(.horizontal)
 
                     if slots.isEmpty {
-                        ContentUnavailableView(
-                            "Sin tomas hoy",
-                            systemImage: "calendar.badge.checkmark",
-                            description: Text("Añade medicamentos con pauta para ver tus tomas aquí.")
-                        )
+                        if medications.isEmpty && cloudSyncMonitor?.isSyncing == true {
+                            CloudSyncingView()
+                        } else {
+                            ContentUnavailableView(
+                                "Sin tomas hoy",
+                                systemImage: "calendar.badge.checkmark",
+                                description: Text("Añade medicamentos con pauta para ver tus tomas aquí.")
+                            )
+                        }
                     } else {
                         ForEach(groupedSlots, id: \.0) { period, periodSlots in
                             TodaySectionView(

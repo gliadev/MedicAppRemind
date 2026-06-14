@@ -20,19 +20,30 @@ extension Medication {
     ///
     /// Delegates stock-level logic to `stockStatus(for:)` so the clinical
     /// thresholds remain a single source of truth.
-    func accessibilityDescription(for schedule: DoseSchedule) -> String {
+    ///
+    /// Each branch is a full-sentence localized key (translators control the
+    /// whole phrase, never assembled fragments). `locale` drives which
+    /// localization is looked up via `LocalizedStringResource.locale`, so tests
+    /// can pin a language; production omits it and follows the user's locale.
+    func accessibilityDescription(
+        for schedule: DoseSchedule,
+        locale: Locale = .current
+    ) -> String {
         let stock = stockStatus(for: [schedule])
+        var resource: LocalizedStringResource
         switch stock.level {
         case .unknown:
-            return "\(name), \(doseLabel), sin pauta"
+            resource = "\(name), \(doseLabel), sin pauta"
         case .critical:
-            return "\(name), \(doseLabel), sin stock"
+            resource = "\(name), \(doseLabel), sin stock"
         case .ok:
             let days = stock.remainingDays ?? 0
-            return "\(name), \(doseLabel), quedan \(days) días, stock correcto"
+            resource = "\(name), \(doseLabel), quedan \(days) días, stock correcto"
         case .low:
             let days = stock.remainingDays ?? 0
-            return "\(name), \(doseLabel), quedan \(days) días, stock bajo"
+            resource = "\(name), \(doseLabel), quedan \(days) días, stock bajo"
         }
+        resource.locale = locale
+        return String(localized: resource)
     }
 }

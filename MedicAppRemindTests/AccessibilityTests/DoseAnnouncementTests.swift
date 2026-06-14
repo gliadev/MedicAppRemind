@@ -7,15 +7,19 @@
 //  the correct rounded-down count.
 //
 
+import Foundation
 import Testing
 @testable import MedicAppRemind
 
 @Suite("Medication.doseRegisteredAnnouncement")
 struct DoseAnnouncementTests {
 
-    @Test("Text starts with 'Toma registrada'")
+    @Test("Text starts with 'Toma registrada' when localized in Spanish")
     func prefixPresent() {
-        let text = makeMedication().doseRegisteredAnnouncement(remainingAfter: 5)
+        let text = makeMedication().doseRegisteredAnnouncement(
+            remainingAfter: 5,
+            locale: Locale(identifier: "es")
+        )
         #expect(text.hasPrefix("Toma registrada"))
     }
 

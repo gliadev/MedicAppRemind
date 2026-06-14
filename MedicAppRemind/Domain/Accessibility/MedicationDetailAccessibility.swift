@@ -13,8 +13,17 @@ extension Medication {
     ///
     /// `remaining` is the new stock count (post-decrement); clamped to zero
     /// because stock is never negative.
-    func doseRegisteredAnnouncement(remainingAfter remaining: Double) -> String {
+    ///
+    /// `locale` drives which localization is looked up (via
+    /// `LocalizedStringResource.locale`), so tests can pin a language
+    /// deterministically; production omits it and follows the user's locale.
+    func doseRegisteredAnnouncement(
+        remainingAfter remaining: Double,
+        locale: Locale = .current
+    ) -> String {
         let count = Int(max(0, remaining))
-        return String(localized: "Toma registrada, quedan \(count) pastillas")
+        var resource = LocalizedStringResource("Toma registrada, quedan \(count) pastillas")
+        resource.locale = locale
+        return String(localized: resource)
     }
 }

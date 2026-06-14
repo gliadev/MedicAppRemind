@@ -27,6 +27,7 @@ struct RootView: View {
 
     @State private var router = AppRouter()
     @State private var coordinator: NotificationCoordinator?
+    @State private var syncMonitor = CloudSyncMonitor()
 
     init(container: ModelContainer) {
         self.container = container
@@ -48,6 +49,7 @@ struct RootView: View {
         .environment(router)
         .environment(\.calendarSync, calendarSync)
         .environment(\.medicationStore, store)
+        .environment(\.cloudSyncMonitor, syncMonitor)
         .task { await bootstrapNotifications() }
     }
 
@@ -55,6 +57,7 @@ struct RootView: View {
     /// authorization, and an initial reminder refresh. Idempotent — re-running
     /// when the coordinator already exists is a no-op.
     private func bootstrapNotifications() async {
+        syncMonitor.start()
         guard coordinator == nil else { return }
         let service = NotificationService()
         let coordinator = NotificationCoordinator(store: store, notificationService: service, router: router)

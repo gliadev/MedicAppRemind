@@ -7,6 +7,7 @@
 //  remaining-days info for every stock level. Pure domain: no UI, no store.
 //
 
+import Foundation
 import Testing
 @testable import MedicAppRemind
 
@@ -16,11 +17,15 @@ struct AccessibilityDescriptionTests {
     // Once-daily schedule at 09:00 — 1 dose/day
     private let daily = makeSchedule()
 
+    // Pin Spanish so the localized phrase is deterministic regardless of the
+    // test runner's language.
+    private let spanish = Locale(identifier: "es")
+
     @Test("ok — includes name, doseLabel, days, and 'stock correcto'")
     func okStock() {
         // 30 pills ÷ 1 pill/dose × 1 dose/day = 30 days
         let med = makeMedication(currentStock: 30, lowStockThresholdDays: 7)
-        let description = med.accessibilityDescription(for: daily)
+        let description = med.accessibilityDescription(for: daily, locale: spanish)
         #expect(description.contains(med.name))
         #expect(description.contains(med.doseLabel))
         #expect(description.contains("30"))
@@ -31,7 +36,7 @@ struct AccessibilityDescriptionTests {
     func lowStock() {
         // 5 pills ÷ 1 pill/dose × 1 dose/day = 5 days ≤ threshold 7 → low
         let med = makeMedication(currentStock: 5, lowStockThresholdDays: 7)
-        let description = med.accessibilityDescription(for: daily)
+        let description = med.accessibilityDescription(for: daily, locale: spanish)
         #expect(description.contains(med.name))
         #expect(description.contains("5"))
         #expect(description.contains("stock bajo"))
@@ -41,7 +46,7 @@ struct AccessibilityDescriptionTests {
     func criticalStock() {
         // 0 pills → remainingDays = 0, level = .critical
         let med = makeMedication(currentStock: 0, lowStockThresholdDays: 7)
-        let description = med.accessibilityDescription(for: daily)
+        let description = med.accessibilityDescription(for: daily, locale: spanish)
         #expect(description.contains(med.name))
         #expect(description.contains("sin stock"))
     }
@@ -51,7 +56,7 @@ struct AccessibilityDescriptionTests {
         // No dose times → dosesPerDay = 0 → remainingDays = nil → .unknown
         let noTimes = makeSchedule(.daily, times: [])
         let med = makeMedication()
-        let description = med.accessibilityDescription(for: noTimes)
+        let description = med.accessibilityDescription(for: noTimes, locale: spanish)
         #expect(description.contains(med.name))
         #expect(description.contains("sin pauta"))
     }

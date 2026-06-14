@@ -12,6 +12,7 @@ import SwiftData
 
 struct MedicationListView: View {
     @Environment(AppRouter.self) private var router
+    @Environment(\.cloudSyncMonitor) private var cloudSyncMonitor
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
 
     @State private var showingAddEditor = false
@@ -34,14 +35,23 @@ struct MedicationListView: View {
                         showingAddEditor = true
                     }
                 }
+                if cloudSyncMonitor?.isSyncing == true {
+                    ToolbarItem(placement: .topBarLeading) {
+                        SyncStatusLabel()
+                    }
+                }
             }
             .overlay {
                 if medications.isEmpty {
-                    ContentUnavailableView(
-                        "Sin medicamentos",
-                        systemImage: "pills",
-                        description: Text("Añade tu primer medicamento para empezar.")
-                    )
+                    if cloudSyncMonitor?.isSyncing == true {
+                        CloudSyncingView()
+                    } else {
+                        ContentUnavailableView(
+                            "Sin medicamentos",
+                            systemImage: "pills",
+                            description: Text("Añade tu primer medicamento para empezar.")
+                        )
+                    }
                 }
             }
         }

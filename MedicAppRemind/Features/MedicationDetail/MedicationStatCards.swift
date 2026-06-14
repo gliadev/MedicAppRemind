@@ -52,7 +52,8 @@ private struct PillsStatCard: View {
     }
 
     private var pillsAccessibilityValue: String {
-        "\(Int(medication.currentStock)), \(stockLevelDescription(stockStatus))"
+        let count = Int(medication.currentStock)
+        return String(localized: "\(count), \(stockLevelDescription(stockStatus))")
     }
 }
 
@@ -98,19 +99,28 @@ private struct DaysStatCard: View {
     }
 
     private func daysAccessibilityValue(expiryDate: Date?) -> String {
-        let days = stockStatus.remainingDays.map { "\($0) días" } ?? "sin pauta"
-        guard let expiryDate else { return days }
-        return "\(days), se agota el \(expiryDate.formatted(date: .long, time: .omitted))"
+        guard let remaining = stockStatus.remainingDays else {
+            return String(localized: "sin pauta")
+        }
+        guard let expiryDate else {
+            return String(localized: "\(remaining) días")
+        }
+        let date = expiryDate.formatted(date: .long, time: .omitted)
+        return String(localized: "\(remaining) días, se agota el \(date)")
     }
 }
 
 // MARK: - Shared helper
 
-private func stockLevelDescription(_ status: StockStatus) -> String {
+private func stockLevelDescription(_ status: StockStatus, locale: Locale = .current) -> String {
+    let days = status.remainingDays ?? 0
+    var resource: LocalizedStringResource
     switch status.level {
-    case .ok:       "\(status.remainingDays ?? 0) días, stock correcto"
-    case .low:      "\(status.remainingDays ?? 0) días, stock bajo"
-    case .critical: "sin stock"
-    case .unknown:  "sin pauta"
+    case .ok:       resource = "\(days) días, stock correcto"
+    case .low:      resource = "\(days) días, stock bajo"
+    case .critical: resource = "sin stock"
+    case .unknown:  resource = "sin pauta"
     }
+    resource.locale = locale
+    return String(localized: resource)
 }

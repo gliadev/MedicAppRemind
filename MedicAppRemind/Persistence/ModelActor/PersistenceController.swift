@@ -24,9 +24,12 @@ struct PersistenceController {
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: inMemory,
-            // F7 change point: switch to `.automatic` to enable CloudKit sync.
-            // The schema is already CloudKit-safe, so this is the only edit needed.
-            cloudKitDatabase: .none
+            // F7.S1 — CloudKit sync over the user's private database. `.automatic`
+            // resolves the container from the iCloud entitlement
+            // (`iCloud.dev.gliadev.MedicAppRemind`) and uses the private database,
+            // never the public one (health data — see F7.S3). The in-memory store
+            // (tests, previews) stays on `.none`: tests never touch CloudKit.
+            cloudKitDatabase: inMemory ? .none : .automatic
         )
         container = try ModelContainer(
             for: schema,

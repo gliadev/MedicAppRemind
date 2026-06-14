@@ -39,11 +39,13 @@ struct MedicationScheduleRow: View {
     // MARK: - Display helpers
 
     private var timeLabel: String {
-        var comps = time
-        comps.year = 2000; comps.month = 1; comps.day = 1
-        guard let date = Calendar.current.date(from: comps) else {
-            return String(format: "%02d:%02d", time.hour ?? 0, time.minute ?? 0)
-        }
+        let base = Date(timeIntervalSinceReferenceDate: 0)
+        let date = Calendar.current.date(
+            bySettingHour: time.hour ?? 0,
+            minute: time.minute ?? 0,
+            second: 0,
+            of: base
+        ) ?? base
         return date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))
     }
 
