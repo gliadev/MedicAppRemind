@@ -160,11 +160,10 @@ struct MedicationDetailView: View {
         Button("Registrar toma", systemImage: "checkmark.circle") {
             Task { await recordDose(for: medication) }
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .controlSize(.large)
         .frame(maxWidth: .infinity)
         .padding()
-        .background(.thinMaterial)
         .disabled(isRecording || store == nil)
         .accessibilityHint("Resta una pastilla del stock y registra la toma")
     }

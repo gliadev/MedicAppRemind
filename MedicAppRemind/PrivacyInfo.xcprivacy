@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  PrivacyInfo.xcprivacy — MedicAppRemind
+  F8.S3. Coherente con docs/Privacy.md (F7.S3) y ADR01.
+
+  Declaración: la app NO recolecta datos del usuario. Los datos de medicación
+  viven en el dispositivo (SwiftData) y, opcionalmente, en el contenedor iCloud
+  PRIVADO del usuario (CloudKit). Sin backend propio, sin terceros, sin tracking,
+  sin analítica. Cero dependencias externas (ADR02), solo frameworks de Apple.
+
+  APIs "required reason": ninguna. Verificado por grep en F8.S3 — sin UserDefaults,
+  sin @AppStorage, sin APIs de timestamp de fichero, sin systemUptime, sin disk
+  space ni active keyboard. Si en el futuro se añade alguna, declararla aquí.
+
+  IMPORTANTE (Adolfo): este fichero debe pertenecer al target MedicAppRemind
+  (Target Membership marcado en Xcode). Añadir/verificar en Xcode, no por shell.
+-->
+<plist version="1.0">
+<dict>
+    <key>NSPrivacyTracking</key>
+    <false/>
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array/>
+</dict>
+</plist>
