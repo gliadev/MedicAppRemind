@@ -28,6 +28,8 @@ struct RootView: View {
     @State private var router = AppRouter()
     @State private var coordinator: NotificationCoordinator?
     @State private var syncMonitor = CloudSyncMonitor()
+    @State private var lockMonitor = AppLockMonitor()
+    @Environment(\.scenePhase) private var scenePhase
 
     init(container: ModelContainer) {
         self.container = container
@@ -50,7 +52,16 @@ struct RootView: View {
         .environment(\.calendarSync, calendarSync)
         .environment(\.medicationStore, store)
         .environment(\.cloudSyncMonitor, syncMonitor)
+        .environment(lockMonitor)
         .task { await bootstrapNotifications() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { lockMonitor.lock() }
+        }
+        .overlay {
+            if lockMonitor.isLocked {
+                LockScreenView { await lockMonitor.unlock() }
+            }
+        }
     }
 
     /// Builds the notification stack once and primes it: delegate, category,

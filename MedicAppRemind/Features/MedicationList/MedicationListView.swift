@@ -13,9 +13,12 @@ import SwiftData
 struct MedicationListView: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.cloudSyncMonitor) private var cloudSyncMonitor
+    @Environment(AppLockMonitor.self) private var lockMonitor
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
 
     @State private var showingAddEditor = false
+    @State private var lockError: String?
+    @State private var showLockError = false
 
     var body: some View {
         @Bindable var router = router
@@ -35,11 +38,28 @@ struct MedicationListView: View {
                         showingAddEditor = true
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(
+                        lockMonitor.isEnabled ? "Desactivar bloqueo" : "Activar bloqueo",
+                        systemImage: lockMonitor.isEnabled ? "lock.fill" : "lock.open"
+                    ) {
+                        Task { await toggleLock() }
+                    }
+                    .accessibilityHint(lockMonitor.isEnabled
+                        ? "Desactiva el bloqueo biométrico de la app"
+                        : "Activa Face ID o Touch ID para proteger tu medicación"
+                    )
+                }
                 if cloudSyncMonitor?.isSyncing == true {
                     ToolbarItem(placement: .topBarLeading) {
                         SyncStatusLabel()
                     }
                 }
+            }
+            .alert("Bloqueo biométrico", isPresented: $showLockError) {
+                Button("OK") {}
+            } message: {
+                Text(lockError ?? "")
             }
             .overlay {
                 if medications.isEmpty {
@@ -57,6 +77,19 @@ struct MedicationListView: View {
         }
         .sheet(isPresented: $showingAddEditor) {
             MedicationEditorView()
+        }
+    }
+
+    private func toggleLock() async {
+        if lockMonitor.isEnabled {
+            await lockMonitor.disable()
+        } else {
+            do {
+                try await lockMonitor.enable()
+            } catch {
+                lockError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                showLockError = true
+            }
         }
     }
 }
