@@ -14,6 +14,8 @@ import Foundation
 struct LogDoseIntent: AppIntent {
     static let title: LocalizedStringResource = "Registrar toma"
     static let description = IntentDescription("Registra una toma y descuenta una pastilla del stock.")
+    // Writing clinical state (dose log + stock decrement) requires an unlocked device.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .requiresLocalDeviceAuthentication }
 
     @Parameter(title: "Medicamento")
     var medication: MedicationEntity

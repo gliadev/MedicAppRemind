@@ -14,6 +14,8 @@ import Foundation
 struct ScheduleReminderIntent: AppIntent {
     static let title: LocalizedStringResource = "Programar recordatorio"
     static let description = IntentDescription("Añade una hora de toma y programa el recordatorio.")
+    // Mutating the dose schedule requires an unlocked device.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .requiresLocalDeviceAuthentication }
 
     @Parameter(title: "Medicamento")
     var medication: MedicationEntity

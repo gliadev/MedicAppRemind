@@ -15,6 +15,8 @@ import SwiftUI
 struct QueryRemainingIntent: AppIntent {
     static let title: LocalizedStringResource = "Consultar restante"
     static let description = IntentDescription("Dice cuántas pastillas y días de tratamiento te quedan.")
+    // Clinical data (medication name + remaining supply) must not be readable from a locked screen.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .requiresLocalDeviceAuthentication }
 
     @Parameter(title: "Medicamento")
     var medication: MedicationEntity
