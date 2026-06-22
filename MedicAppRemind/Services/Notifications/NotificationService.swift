@@ -131,19 +131,35 @@ actor NotificationService {
     /// Builds localized notification content for a reminder kind, carrying the
     /// `medicationID` in `userInfo` for the F3.S3 deep-link and tagging dose
     /// reminders with the actionable category.
+    ///
+    /// The body is intentionally generic — medication names are clinical data and
+    /// must not appear on the lock screen. The deep-link in `userInfo` routes the
+    /// user to the full detail once the device is unlocked.
     private func makeContent(for kind: PlannedReminder.Kind, medication: Medication) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         switch kind {
         case .dose:
             content.title = String(localized: "Hora de tu medicación")
-            content.body = String(localized: "Toma \(medication.name) (\(medication.doseLabel))")
+            content.body = Self.notificationBody(for: .dose)
             content.categoryIdentifier = UNNotificationCategory.doseIdentifier
         case .lowStock:
             content.title = String(localized: "Stock bajo")
-            content.body = String(localized: "Te queda poco \(medication.name). Recarga pronto.")
+            content.body = Self.notificationBody(for: .lowStock)
         }
         content.sound = .default
         content.userInfo = DosePayload(medicationID: medication.id).userInfo
         return content
+    }
+
+    /// Returns the notification body for a given reminder kind.
+    ///
+    /// Extracted as `static nonisolated` so tests can assert the privacy guarantee
+    /// (no PHI on the lock screen) without instantiating the actor or mocking
+    /// `UNUserNotificationCenter`.
+    static nonisolated func notificationBody(for kind: PlannedReminder.Kind) -> String {
+        switch kind {
+        case .dose: String(localized: "Tienes una toma pendiente.")
+        case .lowStock: String(localized: "Recarga tu medicación pronto.")
+        }
     }
 }
