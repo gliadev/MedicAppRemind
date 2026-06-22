@@ -95,3 +95,15 @@ struct IntakeLogRow: View {
         }
     }
 }
+
+#Preview {
+    let medID = UUID()
+    let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now) ?? .now
+    let inTwoHours = Calendar.current.date(byAdding: .hour, value: 2, to: .now) ?? .now
+    List {
+        IntakeLogRow(log: IntakeLog(id: UUID(), medicationID: medID, scheduledAt: .now, takenAt: .now, status: .taken, pillsTaken: 1))
+        IntakeLogRow(log: IntakeLog(id: UUID(), medicationID: medID, scheduledAt: yesterday, takenAt: nil, status: .missed, pillsTaken: 0))
+        IntakeLogRow(log: IntakeLog(id: UUID(), medicationID: medID, scheduledAt: inTwoHours, takenAt: nil, status: .pending, pillsTaken: 0))
+        IntakeLogRow(log: IntakeLog(id: UUID(), medicationID: medID, scheduledAt: yesterday, takenAt: nil, status: .skipped, pillsTaken: 0))
+    }
+}

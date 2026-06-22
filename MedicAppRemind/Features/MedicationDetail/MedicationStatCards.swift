@@ -124,3 +124,39 @@ private func stockLevelDescription(_ status: StockStatus, locale: Locale = .curr
     resource.locale = locale
     return String(localized: resource)
 }
+
+#Preview("Stock correcto") {
+    let medication = Medication(
+        id: UUID(), name: "Atorvastatina", notes: "", form: .pill,
+        doseLabel: "20 mg", pillsPerDose: 1, currentStock: 45,
+        lowStockThresholdDays: 7, createdAt: .now, updatedAt: .now
+    )
+    let schedule = DoseSchedule(
+        times: [DateComponents(hour: 8, minute: 0)],
+        frequency: .daily, startDate: .now
+    )
+    MedicationStatCards(
+        medication: medication,
+        schedules: [schedule],
+        stockStatus: StockStatus(level: .ok, remainingDays: 45)
+    )
+    .padding()
+}
+
+#Preview("Stock bajo") {
+    let medication = Medication(
+        id: UUID(), name: "Metformina", notes: "", form: .tablet,
+        doseLabel: "500 mg", pillsPerDose: 2, currentStock: 10,
+        lowStockThresholdDays: 7, createdAt: .now, updatedAt: .now
+    )
+    let schedule = DoseSchedule(
+        times: [DateComponents(hour: 8, minute: 0), DateComponents(hour: 20, minute: 0)],
+        frequency: .daily, startDate: .now
+    )
+    MedicationStatCards(
+        medication: medication,
+        schedules: [schedule],
+        stockStatus: StockStatus(level: .low, remainingDays: 5)
+    )
+    .padding()
+}

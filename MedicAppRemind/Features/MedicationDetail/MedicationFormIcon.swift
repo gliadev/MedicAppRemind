@@ -33,3 +33,12 @@ struct MedicationFormIcon: View {
         }
     }
 }
+
+#Preview {
+    HStack(spacing: 12) {
+        ForEach(MedicationForm.allCases, id: \.self) { form in
+            MedicationFormIcon(form: form)
+        }
+    }
+    .padding()
+}

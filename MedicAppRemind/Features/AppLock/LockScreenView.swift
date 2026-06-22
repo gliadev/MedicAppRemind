@@ -41,3 +41,7 @@ struct LockScreenView: View {
         .task { await onUnlock() }
     }
 }
+
+#Preview {
+    LockScreenView(onUnlock: {})
+}

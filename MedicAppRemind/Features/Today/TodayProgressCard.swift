@@ -53,3 +53,15 @@ struct TodayProgressCard: View {
         "\(done) de \(total) tomas completadas. \(remainingLabel)"
     }
 }
+
+#Preview {
+    let now = Date.now
+    let cal = Calendar.current
+    let slots = [
+        DoseSlot(id: UUID(), medicationID: UUID(), medicationName: "Atorvastatina", doseLabel: "20 mg", pillsPerDose: 1, scheduledAt: cal.date(bySettingHour: 8, minute: 0, second: 0, of: now) ?? now, period: .morning, isTaken: true),
+        DoseSlot(id: UUID(), medicationID: UUID(), medicationName: "Metformina", doseLabel: "500 mg", pillsPerDose: 2, scheduledAt: cal.date(bySettingHour: 14, minute: 0, second: 0, of: now) ?? now, period: .afternoon, isTaken: false),
+        DoseSlot(id: UUID(), medicationID: UUID(), medicationName: "Omeprazol", doseLabel: "20 mg", pillsPerDose: 1, scheduledAt: cal.date(bySettingHour: 22, minute: 0, second: 0, of: now) ?? now, period: .evening, isTaken: false),
+    ]
+    TodayProgressCard(slots: slots)
+        .padding()
+}

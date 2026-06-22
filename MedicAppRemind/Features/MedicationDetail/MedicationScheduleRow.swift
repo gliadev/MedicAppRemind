@@ -80,3 +80,11 @@ struct MedicationScheduleRow: View {
         return .indigo.opacity(0.15)
     }
 }
+
+#Preview {
+    List {
+        MedicationScheduleRow(time: DateComponents(hour: 8, minute: 0), pillsPerDose: 1)
+        MedicationScheduleRow(time: DateComponents(hour: 14, minute: 30), pillsPerDose: 2)
+        MedicationScheduleRow(time: DateComponents(hour: 22, minute: 0), pillsPerDose: 1)
+    }
+}

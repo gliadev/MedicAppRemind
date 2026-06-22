@@ -13,6 +13,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MedicationRow: View {
     let model: MedicationModel
@@ -53,5 +54,37 @@ struct MedicationRow: View {
 
     private func rowValue(stockStatus: StockStatus) -> String {
         stockStatus.remainingDays.map { "\($0) días" } ?? ""
+    }
+}
+
+#Preview {
+    let controller = try? PersistenceController(inMemory: true)
+    if let controller {
+        let _ = {
+            let context = ModelContext(controller.container)
+            let m1 = MedicationModel()
+            m1.name = "Atorvastatina"
+            m1.doseLabel = "20 mg"
+            m1.currentStock = 45
+            context.insert(m1)
+            let m2 = MedicationModel()
+            m2.name = "Metformina"
+            m2.doseLabel = "500 mg"
+            m2.currentStock = 8
+            context.insert(m2)
+            try? context.save()
+        }()
+        MedicationRowList()
+            .modelContainer(controller.container)
+    }
+}
+
+@MainActor
+private struct MedicationRowList: View {
+    @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
+    var body: some View {
+        List(medications) { med in
+            MedicationRow(model: med)
+        }
     }
 }

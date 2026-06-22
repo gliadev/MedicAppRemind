@@ -99,3 +99,27 @@ struct TodayDoseRow: View {
         return "\(slot.medicationName), \(slot.doseLabel), \(time), \(status)"
     }
 }
+
+#Preview {
+    let now = Date.now
+    let morning = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: now) ?? now
+    let afternoon = Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: now) ?? now
+    List {
+        TodayDoseRow(
+            slot: DoseSlot(
+                id: UUID(), medicationID: UUID(),
+                medicationName: "Atorvastatina", doseLabel: "20 mg",
+                pillsPerDose: 1, scheduledAt: morning, period: .morning, isTaken: false
+            ),
+            onToggle: {}
+        )
+        TodayDoseRow(
+            slot: DoseSlot(
+                id: UUID(), medicationID: UUID(),
+                medicationName: "Metformina", doseLabel: "500 mg",
+                pillsPerDose: 2, scheduledAt: afternoon, period: .afternoon, isTaken: true
+            ),
+            onToggle: {}
+        )
+    }
+}

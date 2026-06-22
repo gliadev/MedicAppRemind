@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Calendar-sync section for the medication detail. Owns the toggle's on/off state and
 /// drives the async effect, reverting and reporting on failure. The persisted event
@@ -99,5 +100,23 @@ struct MedicationCalendarSection: View {
 
     private func present(_ error: Error) {
         errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+    }
+}
+
+#Preview {
+    let controller = try? PersistenceController(inMemory: true)
+    if let controller {
+        let model: MedicationModel = {
+            let m = MedicationModel()
+            m.name = "Atorvastatina"
+            let context = ModelContext(controller.container)
+            context.insert(m)
+            try? context.save()
+            return m
+        }()
+        Form {
+            MedicationCalendarSection(medication: model)
+        }
+        .modelContainer(controller.container)
     }
 }
