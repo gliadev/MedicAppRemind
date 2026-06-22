@@ -49,6 +49,7 @@ struct MedicationListView: View {
                         ? "Desactiva el bloqueo biométrico de la app"
                         : "Activa Face ID o Touch ID para proteger tu medicación"
                     )
+                    .accessibilityInputLabels(["Bloqueo"])
                 }
                 if cloudSyncMonitor?.isSyncing == true {
                     ToolbarItem(placement: .topBarLeading) {

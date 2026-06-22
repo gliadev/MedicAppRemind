@@ -12,10 +12,12 @@ import SwiftUI
 struct LockScreenView: View {
     let onUnlock: () async -> Void
 
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize = 56.0
+
     var body: some View {
         VStack(spacing: 24) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 56))
+                .font(.system(size: iconSize))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
 

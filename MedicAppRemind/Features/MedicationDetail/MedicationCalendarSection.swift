@@ -23,12 +23,24 @@ struct MedicationCalendarSection: View {
     @State private var isWorking = false
     @State private var errorMessage: String?
     @State private var showPrivacyWarning = false
+    @State private var isPendingEnable = false
 
     var body: some View {
         Section("Calendario") {
-            Toggle("Añadir al calendario", isOn: calendarToggleBinding)
+            Toggle("Añadir al calendario", isOn: $isCalendarOn)
                 .disabled(calendarSync == nil || isWorking)
                 .accessibilityHint("Crea o elimina los eventos de tus tomas en el calendario del sistema.")
+                .onChange(of: isCalendarOn) { _, newValue in
+                    let alreadyMirrored = !medication.calendarEventIDs.isEmpty
+                    guard newValue != alreadyMirrored else { return }
+                    if newValue && !isPendingEnable {
+                        isCalendarOn = false
+                        showPrivacyWarning = true
+                    } else {
+                        isPendingEnable = false
+                        Task { await sync(enable: newValue) }
+                    }
+                }
 
             Button("Recordar recarga en calendario", systemImage: "calendar.badge.plus") {
                 Task { await scheduleRefill() }
@@ -43,8 +55,8 @@ struct MedicationCalendarSection: View {
             isPresented: $showPrivacyWarning
         ) {
             Button("Continuar") {
+                isPendingEnable = true
                 isCalendarOn = true
-                Task { await sync(enable: true) }
             }
             Button("Cancelar", role: .cancel) {}
         } message: {
@@ -58,24 +70,6 @@ struct MedicationCalendarSection: View {
         } message: {
             Text(errorMessage ?? "")
         }
-    }
-
-    /// Intercepts the toggle tap. Enabling shows a privacy warning before syncing;
-    /// disabling skips the warning and unmirrors immediately.
-    private var calendarToggleBinding: Binding<Bool> {
-        Binding(
-            get: { isCalendarOn },
-            set: { newValue in
-                let alreadyMirrored = !medication.calendarEventIDs.isEmpty
-                guard newValue != alreadyMirrored else { return }
-                if newValue {
-                    showPrivacyWarning = true
-                } else {
-                    isCalendarOn = false
-                    Task { await sync(enable: false) }
-                }
-            }
-        )
     }
 
     /// Mirrors or unmirrors the medication, reverting the toggle to the persisted truth
