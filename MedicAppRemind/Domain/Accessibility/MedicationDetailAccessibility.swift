@@ -22,7 +22,8 @@ extension Medication {
         locale: Locale = .current
     ) -> String {
         let count = Int(max(0, remaining))
-        var resource = LocalizedStringResource("Toma registrada, quedan \(count) pastillas")
+        let pills = pillCountText(Double(count), locale: locale)
+        var resource: LocalizedStringResource = "Toma registrada, quedan \(pills)"
         resource.locale = locale
         return String(localized: resource)
     }

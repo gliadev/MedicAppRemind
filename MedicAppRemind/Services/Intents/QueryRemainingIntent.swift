@@ -31,12 +31,12 @@ struct QueryRemainingIntent: AppIntent {
             throw IntentError.medicationNotFound
         }
         let supply = remainingSupply(for: plan)
-        let pills = supply.remainingPills.formatted(.number)
+        let pills = pillCountText(supply.remainingPills)
 
         let dialog: IntentDialog = if let days = supply.remainingDays {
-            "Te quedan \(pills) pastillas de \(supply.medicationName), para unos \(days) días."
+            "Te quedan \(pills) de \(supply.medicationName), para \(approxDaysText(days))."
         } else {
-            "Te quedan \(pills) pastillas de \(supply.medicationName)."
+            "Te quedan \(pills) de \(supply.medicationName)."
         }
 
         return .result(dialog: dialog, view: QueryRemainingSnippetView(supply: supply))

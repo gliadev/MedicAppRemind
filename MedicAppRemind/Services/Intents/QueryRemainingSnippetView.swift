@@ -20,14 +20,14 @@ struct QueryRemainingSnippetView: View {
                 .font(.headline)
 
             Label {
-                Text("\(supply.remainingPills, format: .number) pastillas")
+                Text(pillsLabel)
             } icon: {
                 Image(systemName: "pills.fill")
             }
 
             if let days = supply.remainingDays {
                 Label {
-                    Text("\(days) días de tratamiento")
+                    Text(treatmentDaysText(days))
                 } icon: {
                     Image(systemName: "calendar")
                 }
@@ -37,4 +37,6 @@ struct QueryRemainingSnippetView: View {
         .padding()
         .accessibilityElement(children: .combine)
     }
+
+    private var pillsLabel: String { pillCountText(supply.remainingPills) }
 }

@@ -51,7 +51,9 @@ struct MedicationScheduleRow: View {
 
     private var pillsLabel: String {
         let n = Int(pillsPerDose)
-        return n == 1 ? "1 pastilla" : "\(n) pastillas"
+        return n == 1
+            ? String(localized: "1 pastilla", comment: "Pills per dose, singular")
+            : String(localized: "\(n) pastillas", comment: "Pills per dose, plural")
     }
 
     private var rowAccessibilityLabel: String {

@@ -102,22 +102,21 @@ private struct DaysStatCard: View {
         guard let remaining = stockStatus.remainingDays else {
             return String(localized: "sin pauta")
         }
-        guard let expiryDate else {
-            return String(localized: "\(remaining) días")
-        }
+        let days = dayCountText(remaining)
+        guard let expiryDate else { return days }
         let date = expiryDate.formatted(date: .long, time: .omitted)
-        return String(localized: "\(remaining) días, se agota el \(date)")
+        return String(localized: "\(days), se agota el \(date)")
     }
 }
 
 // MARK: - Shared helper
 
 private func stockLevelDescription(_ status: StockStatus, locale: Locale = .current) -> String {
-    let days = status.remainingDays ?? 0
+    let days = dayCountText(status.remainingDays ?? 0, locale: locale)
     var resource: LocalizedStringResource
     switch status.level {
-    case .ok:       resource = "\(days) días, stock correcto"
-    case .low:      resource = "\(days) días, stock bajo"
+    case .ok:       resource = "\(days), stock correcto"
+    case .low:      resource = "\(days), stock bajo"
     case .critical: resource = "sin stock"
     case .unknown:  resource = "sin pauta"
     }

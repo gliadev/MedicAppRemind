@@ -307,6 +307,11 @@ struct MedicationEditorView: View {
         defer { isSaving = false }
         do {
             try await store.upsert(medication, schedule: schedule)
+            // Schedule/stock may have changed → reprogram reminders (same pattern as
+            // RootView bootstrap and ScheduleReminderIntent). refreshAllReminders is
+            // idempotent: it clears all pending requests and recomputes from scratch.
+            let plans = (try? await store.fetchPlans()) ?? []
+            await NotificationService().refreshAllReminders(for: plans)
             dismiss()
         } catch {
             // Store-level error; validation path is covered above.

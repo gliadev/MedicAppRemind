@@ -29,7 +29,7 @@ struct LogDoseIntent: AppIntent {
             throw IntentError.medicationNotFound
         }
         let outcome = try await logDose(medicationID: medication.id, using: store, at: .now)
-        let pills = outcome.remainingPills.formatted(.number)
-        return .result(dialog: "Registrada la toma de \(outcome.medicationName). Te quedan \(pills) pastillas.")
+        let pills = pillCountText(outcome.remainingPills)
+        return .result(dialog: "Registrada la toma de \(outcome.medicationName). Te quedan \(pills).")
     }
 }
