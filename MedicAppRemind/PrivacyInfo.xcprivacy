@@ -9,12 +9,14 @@
   PRIVADO del usuario (CloudKit). Sin backend propio, sin terceros, sin tracking,
   sin analítica. Cero dependencias externas (ADR02), solo frameworks de Apple.
 
-  APIs "required reason": ninguna. Verificado por grep en F8.S3 — sin UserDefaults,
-  sin @AppStorage, sin APIs de timestamp de fichero, sin systemUptime, sin disk
-  space ni active keyboard. Si en el futuro se añade alguna, declararla aquí.
+  APIs "required reason": UserDefaults (NSPrivacyAccessedAPICategoryUserDefaults,
+  razón CA92.1). AppLockMonitor guarda el flag de bloqueo en UserDefaults.standard,
+  accesible solo por la propia app. Verificado por grep (2026-06-26): sin APIs de
+  timestamp de fichero, sin systemUptime, sin disk space, sin active keyboard. Si
+  se añade otra, declararla aquí.
 
-  IMPORTANTE (Adolfo): este fichero debe pertenecer al target MedicAppRemind
-  (Target Membership marcado en Xcode). Añadir/verificar en Xcode, no por shell.
+  Target Membership: incluido automáticamente por los grupos sincronizados de Xcode
+  (PBXFileSystemSynchronizedRootGroup); verificado dentro del .app compilado.
 -->
 <plist version="1.0">
 <dict>
@@ -25,6 +27,15 @@
     <key>NSPrivacyCollectedDataTypes</key>
     <array/>
     <key>NSPrivacyAccessedAPITypes</key>
-    <array/>
+    <array>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
