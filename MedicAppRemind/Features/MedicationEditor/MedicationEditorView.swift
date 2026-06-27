@@ -27,6 +27,12 @@ struct MedicationEditorView: View {
     @State private var showingTimePicker = false
     @State private var pickerTime: Date
 
+    // Pauta (AX-04): editing mode + the values each mode needs.
+    @State private var kind: ScheduleKind
+    @State private var selectedWeekdays: Set<Weekday>
+    @State private var intervalHours: Int
+    @State private var startTime: Date
+
     // MARK: - Validation + save
 
     @State private var validationErrors: Set<ValidationError> = []
@@ -59,6 +65,15 @@ struct MedicationEditorView: View {
         _times = State(initialValue: schedule?.times ?? [])
         _pickerTime = State(initialValue: {
             Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
+        }())
+
+        let frequency = schedule?.frequency
+        _kind = State(initialValue: frequency.map(ScheduleKind.init) ?? .daily)
+        _selectedWeekdays = State(initialValue: frequency?.selectedWeekdays ?? [])
+        _intervalHours = State(initialValue: frequency?.intervalHours ?? DoseFrequency.defaultIntervalHours)
+        _startTime = State(initialValue: {
+            let fallback = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
+            return schedule?.startDate ?? fallback
         }())
     }
 
@@ -158,19 +173,103 @@ struct MedicationEditorView: View {
     @ViewBuilder
     private func scheduleSection() -> some View {
         Section("Horario de tomas") {
+            Picker("Tipo de pauta", selection: $kind) {
+                Text("Cada día").tag(ScheduleKind.daily)
+                Text("Días concretos").tag(ScheduleKind.weekdays)
+                Text("Cada X horas").tag(ScheduleKind.everyNHours)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel("Tipo de pauta")
+
             if validationErrors.contains(.emptySchedule) {
                 validationText(for: .emptySchedule)
                     .accessibilityFocused($focusedField, equals: .schedule)
             }
 
-            ForEach(times.indices, id: \.self) { i in
-                timeRow(at: i)
+            switch kind {
+            case .daily:
+                timesEditor()
+            case .weekdays:
+                weekdaySelector()
+                timesEditor()
+            case .everyNHours:
+                intervalEditor()
             }
+        }
+    }
 
-            Button("Añadir hora", systemImage: "plus.circle") {
-                showingTimePicker = true
+    @ViewBuilder
+    private func timesEditor() -> some View {
+        ForEach(times.indices, id: \.self) { i in
+            timeRow(at: i)
+        }
+
+        Button("Añadir hora", systemImage: "plus.circle") {
+            showingTimePicker = true
+        }
+        .accessibilityHint("Añade una hora de toma a la pauta")
+    }
+
+    @ViewBuilder
+    private func weekdaySelector() -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Días de la semana")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                ForEach(Self.orderedWeekdays, id: \.self) { day in
+                    weekdayChip(day)
+                }
             }
-            .accessibilityHint("Añade una hora de toma a la pauta diaria")
+        }
+    }
+
+    @ViewBuilder
+    private func weekdayChip(_ day: Weekday) -> some View {
+        let isOn = selectedWeekdays.contains(day)
+        Button {
+            if isOn { selectedWeekdays.remove(day) } else { selectedWeekdays.insert(day) }
+        } label: {
+            Text(Self.veryShortSymbol(for: day))
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .foregroundStyle(isOn ? Color.white : Color.primary)
+                .background {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(isOn ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.quaternary))
+                }
+                .overlay(alignment: .topTrailing) {
+                    if isOn {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.white)
+                            .padding(2)
+                            .accessibilityHidden(true)
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Self.fullSymbol(for: day))
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+        .accessibilityHint("Toca para activar o desactivar este día")
+    }
+
+    @ViewBuilder
+    private func intervalEditor() -> some View {
+        Picker("Cada cuántas horas", selection: $intervalHours) {
+            ForEach(DoseFrequency.intervalPresets, id: \.self) { hours in
+                Text("Cada \(hours) horas").tag(hours)
+            }
+        }
+
+        DatePicker("Primera toma", selection: $startTime, displayedComponents: .hourAndMinute)
+            .accessibilityLabel("Hora de la primera toma")
+
+        if let preview = intervalFireTimesText {
+            LabeledContent("Avisos") { Text(preview) }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityElement(children: .combine)
         }
     }
 
@@ -259,6 +358,55 @@ struct MedicationEditorView: View {
         return date.formatted(date: .omitted, time: .shortened)
     }
 
+    /// Weekdays in the user's locale order (honours `Calendar.firstWeekday`).
+    private static let orderedWeekdays: [Weekday] = {
+        let first = Calendar.current.firstWeekday
+        return (0..<7).compactMap { offset in
+            Weekday(rawValue: (first - 1 + offset) % 7 + 1)
+        }
+    }()
+
+    private static func veryShortSymbol(for day: Weekday) -> String {
+        let symbols = Calendar.current.veryShortWeekdaySymbols
+        let index = day.rawValue - 1
+        return symbols.indices.contains(index) ? symbols[index] : ""
+    }
+
+    private static func fullSymbol(for day: Weekday) -> String {
+        let symbols = Calendar.current.weekdaySymbols
+        let index = day.rawValue - 1
+        return symbols.indices.contains(index) ? symbols[index] : ""
+    }
+
+    /// Preview of the fire times for the current interval pauta (e.g. "8:00 · 16:00 · 0:00"),
+    /// reusing the Domain's trigger expansion so the editor never re-derives the rhythm.
+    private var intervalFireTimesText: String? {
+        let schedule = DoseSchedule(
+            times: [],
+            frequency: .everyNHours(intervalHours),
+            startDate: startTime,
+            endDate: nil
+        )
+        let labels = schedule.doseTriggerComponents().map {
+            formattedTime(hour: $0.hour ?? 0, minute: $0.minute ?? 0)
+        }
+        return labels.isEmpty ? nil : labels.joined(separator: " · ")
+    }
+
+    /// The schedule start date. For `.everyNHours` the time of day comes from the
+    /// "primera toma" picker (it anchors the interval rhythm); otherwise the existing
+    /// start date is kept, or now for a new medication.
+    private func resolvedStartDate() -> Date {
+        let base = existingSchedule?.startDate ?? .now
+        guard kind == .everyNHours else { return base }
+        let calendar = Calendar.current
+        var merged = calendar.dateComponents([.year, .month, .day], from: base)
+        let time = calendar.dateComponents([.hour, .minute], from: startTime)
+        merged.hour = time.hour
+        merged.minute = time.minute
+        return calendar.date(from: merged) ?? base
+    }
+
     private func collectValidationErrors(medication: Medication, schedule: DoseSchedule) -> Set<ValidationError> {
         var errors: Set<ValidationError> = []
         if !medication.name.contains(where: { !$0.isWhitespace }) { errors.insert(.emptyName) }
@@ -289,10 +437,15 @@ struct MedicationEditorView: View {
             updatedAt: .now
         )
 
+        let frequency = DoseFrequency(
+            kind: kind,
+            weekdays: selectedWeekdays,
+            intervalHours: intervalHours
+        )
         let schedule = DoseSchedule(
             times: times,
-            frequency: existingSchedule?.frequency ?? .daily,
-            startDate: existingSchedule?.startDate ?? .now,
+            frequency: frequency,
+            startDate: resolvedStartDate(),
             endDate: existingSchedule?.endDate
         )
 
