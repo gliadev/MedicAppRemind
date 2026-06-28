@@ -69,9 +69,6 @@ struct MedicationDetailView: View {
             .sorted { $0.scheduledAt > $1.scheduledAt }
             .prefix(10)
             .compactMap { try? $0.toDomain() }
-        let sortedTimes: [(DateComponents, Double)] = schedules
-            .flatMap { schedule in schedule.times.map { ($0, medication.pillsPerDose) } }
-            .sorted { ($0.0.hour ?? 0) < ($1.0.hour ?? 0) }
 
         List {
             headerSection(medication: medication)
@@ -86,13 +83,19 @@ struct MedicationDetailView: View {
                 .listRowInsets(EdgeInsets())
             }
 
-            if !sortedTimes.isEmpty {
-                Section("Pauta diaria") {
-                    ForEach(sortedTimes.indices, id: \.self) { i in
-                        MedicationScheduleRow(
-                            time: sortedTimes[i].0,
-                            pillsPerDose: sortedTimes[i].1
-                        )
+            ForEach(schedules.indices, id: \.self) { i in
+                let schedule = schedules[i]
+                let times = schedule.displayDoseTimes()
+                if !times.isEmpty {
+                    Section {
+                        ForEach(times.indices, id: \.self) { j in
+                            MedicationScheduleRow(
+                                time: times[j],
+                                pillsPerDose: medication.pillsPerDose
+                            )
+                        }
+                    } header: {
+                        scheduleSectionHeader(for: schedule.frequency)
                     }
                 }
             }
@@ -120,6 +123,47 @@ struct MedicationDetailView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             registerDoseButton(for: medication)
         }
+    }
+
+    // MARK: - Schedule section header
+
+    /// Section title that mirrors the pauta kind: daily, the selected weekdays, or the
+    /// dosing interval. Weekly pautas name their days here so the rows can list each time
+    /// of day just once.
+    private func scheduleSectionHeader(for frequency: DoseFrequency) -> Text {
+        switch frequency {
+        case .daily:
+            return Text("Pauta diaria", comment: "Detail schedule section title — every day")
+        case .weekdays(let days):
+            let names = Self.weekdayNames(for: days)
+            return Text(
+                "Días: \(names)",
+                comment: "Detail schedule section title — weekly. Placeholder is a list of weekday names"
+            )
+        case .everyNHours(let hours):
+            return Text(
+                "Cada \(hours) horas",
+                comment: "Detail schedule section title — every N hours"
+            )
+        }
+    }
+
+    /// Selected weekdays as a short, comma-separated list in the user's locale order
+    /// (honours `Calendar.firstWeekday`), reusing the system's localized day names.
+    private static func weekdayNames(for days: [Weekday]) -> String {
+        let symbols = Calendar.current.shortWeekdaySymbols
+        let first = Calendar.current.firstWeekday
+        let selected = Set(days)
+        let ordered = (0..<7).compactMap { offset in
+            Weekday(rawValue: (first - 1 + offset) % 7 + 1)
+        }
+        let names = ordered
+            .filter { selected.contains($0) }
+            .compactMap { day -> String? in
+                let index = day.rawValue - 1
+                return symbols.indices.contains(index) ? symbols[index] : nil
+            }
+        return names.formatted(.list(type: .and))
     }
 
     // MARK: - Header section
