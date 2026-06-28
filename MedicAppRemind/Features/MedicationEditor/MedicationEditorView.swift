@@ -25,6 +25,7 @@ struct MedicationEditorView: View {
     @State private var times: [DateComponents]
     @State private var notificationsEnabled = true
     @State private var showingTimePicker = false
+    @State private var showingScanner = false
     @State private var pickerTime: Date
 
     // Pauta (AX-04): editing mode + the values each mode needs.
@@ -103,7 +104,17 @@ struct MedicationEditorView: View {
             .sheet(isPresented: $showingTimePicker) {
                 timePickerSheet()
             }
+            .sheet(isPresented: $showingScanner) {
+                MedicationScannerScreen(onResult: applyScan)
+            }
         }
+    }
+
+    /// Prefills the name/dose fields from a scan, leaving anything it didn't recognise
+    /// untouched so the user never loses what they already typed.
+    private func applyScan(_ scan: ScannedMedication) {
+        if let name = scan.name, !name.isEmpty { self.name = name }
+        if let dose = scan.dose, !dose.isEmpty { self.doseLabel = dose }
     }
 
     // MARK: - Sections
@@ -111,6 +122,11 @@ struct MedicationEditorView: View {
     @ViewBuilder
     private func nameAndDoseSection() -> some View {
         Section("Nombre y dosis") {
+            Button("Escanear caja", systemImage: "camera.viewfinder") {
+                showingScanner = true
+            }
+            .accessibilityHint("Usa la cámara para rellenar el nombre y la dosis desde la caja")
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("Nombre del medicamento")
                     .font(.caption)

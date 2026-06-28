@@ -4,6 +4,8 @@
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>MediRemind usa la cámara para escanear la caja de tus medicamentos y rellenar el nombre y la dosis automáticamente.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
