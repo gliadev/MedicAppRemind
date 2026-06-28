@@ -11,23 +11,58 @@
 import SwiftUI
 import SwiftData
 
+/// Owns the "current day" and keeps it on the wall clock, re-creating the day-scoped
+/// content (and its `@Query`) whenever the day rolls over — when the app returns to the
+/// foreground on a new day, or at midnight while it stays open.
 struct TodayView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var currentDay = Calendar.current.startOfDay(for: .now)
+
+    var body: some View {
+        TodayContentView(day: currentDay)
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active { syncToToday() }
+            }
+            .task(id: currentDay) { await scheduleMidnightRefresh() }
+    }
+
+    /// Advances `currentDay` if the wall clock has crossed into a new day.
+    private func syncToToday() {
+        let today = Calendar.current.startOfDay(for: .now)
+        if today != currentDay { currentDay = today }
+    }
+
+    /// Sleeps until the next midnight, then advances the day. Restarted by `.task(id:)`
+    /// each time `currentDay` changes, so it always targets the upcoming midnight.
+    private func scheduleMidnightRefresh() async {
+        let seconds = Calendar.current.secondsUntilNextDay(after: .now)
+        try? await Task.sleep(for: .seconds(seconds))
+        syncToToday()
+    }
+}
+
+/// The day's dose schedule. Its `@Query` window is built from `day`, so SwiftUI rebuilds
+/// it with fresh results whenever the parent advances to a new day.
+private struct TodayContentView: View {
     @Environment(\.medicationStore) private var store
     @Environment(\.cloudSyncMonitor) private var cloudSyncMonitor
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
     @Query private var todayLogs: [IntakeLogModel]
 
-    init() {
-        let cal = Calendar.current
-        let start = cal.startOfDay(for: .now)
-        let end = cal.date(byAdding: .day, value: 1, to: start) ?? start
+    let day: Date
+
+    init(day: Date) {
+        self.day = day
+        let bounds = Calendar.current.dayBounds(for: day)
+        let start = bounds.start
+        let end = bounds.end
         _todayLogs = Query(filter: #Predicate<IntakeLogModel> { log in
             log.scheduledAt >= start && log.scheduledAt < end
         })
     }
 
     private var slots: [DoseSlot] {
-        DoseSlot.slots(from: medications, logs: todayLogs, on: .now, calendar: .current)
+        DoseSlot.slots(from: medications, logs: todayLogs, on: day, calendar: .current)
     }
 
     private var groupedSlots: [(DayPeriod, [DoseSlot])] {
@@ -41,7 +76,7 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(.now, format: .dateTime.weekday(.wide).day().month(.wide))
+                    Text(day, format: .dateTime.weekday(.wide).day().month(.wide))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal)
