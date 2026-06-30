@@ -2,14 +2,17 @@
 //  MedicationScannerView.swift
 //  MedicAppRemind
 //
-//  v1.2 — Justified UIKit bridge: VisionKit's `DataScannerViewController` has no SwiftUI
-//  equivalent. Streams the live text it recognises on a medication box into `transcripts`;
-//  the presenting screen parses those lines (`ScannedMedication`) only when the user
-//  confirms. On-device, no network. Requires `NSCameraUsageDescription`.
+//  v1.3 (FX diagnostic) — Justified UIKit bridge: VisionKit's `DataScannerViewController`
+//  has no SwiftUI equivalent. Reads the 2D codes (QR + DataMatrix) printed on a medication
+//  box and streams their raw payloads into `transcripts`. This is the go/no-go probe to
+//  confirm the box's code is a standard symbology (not a proprietary colour code) before
+//  migrating to AVFoundation + GS1 parsing. On-device, no network. Requires
+//  `NSCameraUsageDescription`.
 //
 
 import SwiftUI
 import VisionKit
+import Vision
 
 struct MedicationScannerView: UIViewControllerRepresentable {
     /// The latest text transcripts the scanner sees, newest snapshot each update.
@@ -19,7 +22,7 @@ struct MedicationScannerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
         DataScannerViewController(
-            recognizedDataTypes: [.text()],
+            recognizedDataTypes: [.barcode(symbologies: [.qr, .dataMatrix])],
             qualityLevel: .accurate,
             recognizesMultipleItems: true,
             isHighFrameRateTrackingEnabled: false,
@@ -55,7 +58,7 @@ struct MedicationScannerView: UIViewControllerRepresentable {
                 guard let scanner else { return }
                 for await items in scanner.recognizedItems {
                     self?.transcripts = items.compactMap { item in
-                        if case .text(let text) = item { return text.transcript }
+                        if case .barcode(let barcode) = item { return barcode.payloadStringValue }
                         return nil
                     }
                 }

@@ -51,37 +51,34 @@ struct MedicationScannerScreen: View {
         }
     }
 
+    // FX diagnostic: surface the RAW payload of every 2D code in view so we can confirm
+    // the box reads as a standard QR/DataMatrix before building the GS1 parser + overlay.
     private var captureControls: some View {
         VStack(spacing: 12) {
-            if let preview {
-                Text(preview)
+            if transcripts.isEmpty {
+                Text("Apunta al código de la caja")
                     .font(.callout.bold())
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(.regularMaterial, in: .capsule)
-                    .accessibilityLabel("Detectado: \(preview)")
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Códigos detectados (\(transcripts.count))")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                    ForEach(Array(transcripts.enumerated()), id: \.offset) { _, payload in
+                        Text(payload)
+                            .font(.footnote.monospaced())
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(16)
+                .background(.regularMaterial, in: .rect(cornerRadius: 12))
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Códigos detectados: \(transcripts.joined(separator: ", "))")
             }
-            Button("Usar texto detectado", systemImage: "checkmark.circle.fill") {
-                onResult(ScannedMedication(recognizedLines: transcripts))
-                dismiss()
-            }
-            .buttonStyle(.glassProminent)
-            .controlSize(.large)
-            .disabled(suggestion.isEmpty)
-            .accessibilityHint("Rellena el nombre y la dosis con el texto detectado")
         }
         .padding()
-    }
-
-    /// The current parse of what the camera sees, recomputed as transcripts change.
-    private var suggestion: ScannedMedication {
-        ScannedMedication(recognizedLines: transcripts)
-    }
-
-    /// A short "Name · dose" preview of what confirming would fill, or `nil` when nothing
-    /// usable is in view yet.
-    private var preview: String? {
-        let parts = [suggestion.name, suggestion.dose].compactMap { $0 }
-        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }
