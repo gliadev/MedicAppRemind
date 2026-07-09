@@ -27,4 +27,10 @@ struct Medication: Codable, Equatable, Hashable, Identifiable {
     var lowStockThresholdDays: Int
     var createdAt: Date
     var updatedAt: Date
+    /// Nearest expiry date across the boxes on hand, from a scanned DataMatrix (FX). The
+    /// expiry planner turns it into refill/discard alerts; `nil` when never scanned.
+    var expiryDate: Date? = nil
+    /// Código Nacional (6 digits) the medication was scanned/created from (FX). Lets a new
+    /// scan match this record and merge stock; `nil` for manually entered medications.
+    var nationalCode: String? = nil
 }

@@ -26,6 +26,7 @@ struct PlannedReminder: Equatable, Sendable {
     enum Kind: Equatable, Sendable {
         case dose
         case lowStock
+        case expiry
     }
 
     /// iOS silently drops pending local notifications beyond this many per app, so the
@@ -64,6 +65,7 @@ func plannedReminders(
     let candidates = plans.flatMap { plan in
         doseReminders(for: plan, from: referenceDate, calendar: calendar)
             + lowStockReminders(for: plan, from: referenceDate, calendar: calendar)
+            + expiryReminders(for: plan, from: referenceDate, calendar: calendar)
     }
     let ordered = candidates.sorted { $0.nextFireDate < $1.nextFireDate }
     return Array(ordered.prefix(limit))
@@ -107,4 +109,22 @@ private func lowStockReminders(for plan: MedicationPlan, from referenceDate: Dat
         repeats: false,
         nextFireDate: alertDate
     )]
+}
+
+/// The medication's expiry alerts (a heads-up before expiry and one on the day), each a
+/// one-shot reminder tagged with its fire date for prioritization. Empty when no expiry
+/// is known.
+private func expiryReminders(for plan: MedicationPlan, from referenceDate: Date, calendar: Calendar) -> [PlannedReminder] {
+    let medication = plan.medication
+    return medication.expiryAlerts(from: referenceDate, calendar: calendar).map { alert in
+        let component = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: alert.date)
+        return PlannedReminder(
+            identifier: medication.expiryIdentifier(for: alert.kind),
+            medicationID: medication.id,
+            kind: .expiry,
+            component: component,
+            repeats: false,
+            nextFireDate: alert.date
+        )
+    }
 }

@@ -79,6 +79,35 @@ actor NotificationService {
         try? await center.add(request)
     }
 
+    /// Replaces this medication's expiry alerts with one-shot reminders on the days its
+    /// stock approaches and reaches expiry (today if already inside the window). Cancels
+    /// every pending expiry request for the medication first so re-scheduling never
+    /// duplicates; a no-op when no expiry is known.
+    ///
+    /// - Parameter referenceDate: "now"; injectable for tests.
+    func scheduleExpiryAlert(
+        for medication: Medication,
+        from referenceDate: Date = .now,
+        calendar: Calendar = .current
+    ) async {
+        let center = UNUserNotificationCenter.current()
+        let prefix = medication.expiryIdentifierPrefix
+        let pending = await center.pendingNotificationRequests()
+            .map(\.identifier)
+            .filter { $0.hasPrefix(prefix) }
+        center.removePendingNotificationRequests(withIdentifiers: pending)
+        for alert in medication.expiryAlerts(from: referenceDate, calendar: calendar) {
+            let component = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: alert.date)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: component, repeats: false)
+            let request = UNNotificationRequest(
+                identifier: medication.expiryIdentifier(for: alert.kind),
+                content: makeContent(for: .expiry, medication: medication),
+                trigger: trigger
+            )
+            try? await center.add(request)
+        }
+    }
+
     /// Recomputes and reprograms every medication's reminders, honoring the 64 pending
     /// limit. Called on app launch and after each intake (stock changed → refill date
     /// moved). Clears all pending requests first, so it is idempotent.
@@ -145,6 +174,9 @@ actor NotificationService {
         case .lowStock:
             content.title = String(localized: "Stock bajo")
             content.body = Self.notificationBody(for: .lowStock)
+        case .expiry:
+            content.title = String(localized: "Medicación por caducar")
+            content.body = Self.notificationBody(for: .expiry)
         }
         content.sound = .default
         content.userInfo = DosePayload(medicationID: medication.id).userInfo
@@ -160,6 +192,7 @@ actor NotificationService {
         switch kind {
         case .dose: String(localized: "Tienes una toma pendiente.")
         case .lowStock: String(localized: "Recarga tu medicación pronto.")
+        case .expiry: String(localized: "Revisa la caducidad de tu medicación.")
         }
     }
 }

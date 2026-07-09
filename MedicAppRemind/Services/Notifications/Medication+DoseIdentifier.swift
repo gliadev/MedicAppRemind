@@ -44,6 +44,25 @@ extension Medication {
         Self.lowStockIdentifier(for: id)
     }
 
+    /// The identifier prefix shared by this medication's expiry alerts. Cancellation
+    /// removes every pending expiry request whose identifier has this prefix, in its own
+    /// namespace so it never collides with dose or low-stock reminders.
+    static func expiryIdentifierPrefix(for id: UUID) -> String {
+        "expiry-\(id.uuidString)-"
+    }
+
+    /// The identifier prefix shared by this medication's expiry alerts.
+    var expiryIdentifierPrefix: String {
+        Self.expiryIdentifierPrefix(for: id)
+    }
+
+    /// The stable identifier for one of this medication's expiry alerts, distinct per
+    /// `kind` so the heads-up and on-expiry alerts never collide and re-scheduling reuses
+    /// the same request.
+    func expiryIdentifier(for kind: ExpiryAlertKind) -> String {
+        "\(expiryIdentifierPrefix)\(kind.rawValue)"
+    }
+
     /// The identifier of this medication's pending "snooze" reminder.
     ///
     /// One per medication, in its own namespace, so postponing again replaces the

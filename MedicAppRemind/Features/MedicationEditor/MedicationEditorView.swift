@@ -110,11 +110,11 @@ struct MedicationEditorView: View {
         }
     }
 
-    /// Prefills the name/dose fields from a scan, leaving anything it didn't recognise
-    /// untouched so the user never loses what they already typed.
-    private func applyScan(_ scan: ScannedMedication) {
-        if let name = scan.name, !name.isEmpty { self.name = name }
-        if let dose = scan.dose, !dose.isEmpty { self.doseLabel = dose }
+    /// Prefills the name/dose fields from a CIMA lookup, leaving anything it didn't
+    /// carry untouched so the user never loses what they already typed.
+    private func applyScan(_ suggestion: MedicationLookupSuggestion) {
+        if !suggestion.nombre.isEmpty { self.name = suggestion.nombre }
+        if let dosis = suggestion.dosis, !dosis.isEmpty { self.doseLabel = dosis }
     }
 
     // MARK: - Sections
