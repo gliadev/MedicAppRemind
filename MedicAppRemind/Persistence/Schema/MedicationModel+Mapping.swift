@@ -24,7 +24,9 @@ extension MedicationModel {
             currentStock: currentStock,
             lowStockThresholdDays: lowStockThresholdDays,
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            expiryDate: expiryDate,
+            nationalCode: nationalCode
         )
     }
 
@@ -41,5 +43,7 @@ extension MedicationModel {
         lowStockThresholdDays = medication.lowStockThresholdDays
         createdAt = medication.createdAt
         updatedAt = medication.updatedAt
+        expiryDate = medication.expiryDate
+        nationalCode = medication.nationalCode
     }
 }

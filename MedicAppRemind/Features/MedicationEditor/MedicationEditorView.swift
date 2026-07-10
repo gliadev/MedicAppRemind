@@ -34,6 +34,12 @@ struct MedicationEditorView: View {
     @State private var intervalHours: Int
     @State private var startTime: Date
 
+    // Scan-sourced fields (FX.S5): only shown/editable once a scan has set a national
+    // code — manual entry never surfaces these.
+    @State private var expiryDate: Date?
+    @State private var nationalCode: String?
+    @State private var stockAddedMessage: String?
+
     // MARK: - Validation + save
 
     @State private var validationErrors: Set<ValidationError> = []
@@ -64,6 +70,8 @@ struct MedicationEditorView: View {
             $0.currentStock.formatted(.number.precision(.fractionLength(0...2)))
         } ?? "0")
         _times = State(initialValue: schedule?.times ?? [])
+        _expiryDate = State(initialValue: medication?.expiryDate)
+        _nationalCode = State(initialValue: medication?.nationalCode)
         _pickerTime = State(initialValue: {
             Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
         }())
@@ -85,6 +93,7 @@ struct MedicationEditorView: View {
             Form {
                 nameAndDoseSection()
                 quantitySection()
+                expirySection()
                 scheduleSection()
                 notificationsSection()
             }
@@ -107,14 +116,38 @@ struct MedicationEditorView: View {
             .sheet(isPresented: $showingScanner) {
                 MedicationScannerScreen(onResult: applyScan)
             }
+            .alert(
+                "Stock actualizado",
+                isPresented: Binding(get: { stockAddedMessage != nil }, set: { if !$0 { stockAddedMessage = nil } })
+            ) {
+                Button("Aceptar") { dismiss() }
+            } message: {
+                Text(stockAddedMessage ?? "")
+            }
         }
     }
 
-    /// Prefills the name/dose fields from a scan, leaving anything it didn't recognise
-    /// untouched so the user never loses what they already typed.
-    private func applyScan(_ scan: ScannedMedication) {
-        if let name = scan.name, !name.isEmpty { self.name = name }
-        if let dose = scan.dose, !dose.isEmpty { self.doseLabel = dose }
+    /// Applies the confirmation sheet's outcome (FX.S5). `.prefill` only fills the open
+    /// editor's fields — nothing is written until the user taps "Guardar" — leaving
+    /// anything the scan didn't carry untouched so nothing already typed is lost.
+    /// `.stockAdded` means the box already matched a *different*, already-saved
+    /// medication and its stock was updated directly: this editor closes rather than
+    /// risk creating a duplicate record for the same product.
+    private func applyScan(_ outcome: ScanOutcome) {
+        switch outcome {
+        case .prefill(let name, let dosis, let expiryDate, let units, let nationalCode):
+            if !name.isEmpty { self.name = name }
+            if let dosis, !dosis.isEmpty { self.doseLabel = dosis }
+            if let expiryDate { self.expiryDate = expiryDate }
+            if let units { self.currentStockText = Double(units).formatted(.number.precision(.fractionLength(0...2))) }
+            self.nationalCode = nationalCode
+        case .stockAdded(let medicationName, let units):
+            if let units {
+                stockAddedMessage = String(localized: "Se han sumado \(units) unidades al stock de \(medicationName).")
+            } else {
+                stockAddedMessage = String(localized: "Se ha sumado esta caja al stock de \(medicationName).")
+            }
+        }
     }
 
     // MARK: - Sections
@@ -184,6 +217,33 @@ struct MedicationEditorView: View {
                 }
             }
         }
+    }
+
+    /// Only shown once a scan has attached a national code (FX.S5) — manual entry
+    /// never surfaces expiry, so the form stays uncluttered for that path.
+    @ViewBuilder
+    private func expirySection() -> some View {
+        if nationalCode != nil {
+            Section("Caducidad") {
+                Toggle("Registrar fecha de caducidad", isOn: hasExpiryDateBinding)
+                    .accessibilityHint("Activa para indicar cuándo caduca este medicamento")
+                if expiryDate != nil {
+                    DatePicker("Caduca el", selection: expiryDateBinding, displayedComponents: .date)
+                        .accessibilityLabel("Fecha de caducidad")
+                }
+            }
+        }
+    }
+
+    private var hasExpiryDateBinding: Binding<Bool> {
+        Binding(
+            get: { expiryDate != nil },
+            set: { expiryDate = $0 ? (expiryDate ?? .now) : nil }
+        )
+    }
+
+    private var expiryDateBinding: Binding<Date> {
+        Binding(get: { expiryDate ?? .now }, set: { expiryDate = $0 })
     }
 
     @ViewBuilder
@@ -450,7 +510,9 @@ struct MedicationEditorView: View {
             currentStock: currentStock,
             lowStockThresholdDays: existingMedication?.lowStockThresholdDays ?? 7,
             createdAt: existingMedication?.createdAt ?? .now,
-            updatedAt: .now
+            updatedAt: .now,
+            expiryDate: expiryDate,
+            nationalCode: nationalCode
         )
 
         let frequency = DoseFrequency(

@@ -31,7 +31,9 @@ func makeMedication(
     currentStock: Double = 30,
     lowStockThresholdDays: Int = 7,
     createdAt: Date = domainFixtureDate,
-    updatedAt: Date = domainFixtureDate
+    updatedAt: Date = domainFixtureDate,
+    expiryDate: Date? = nil,
+    nationalCode: String? = nil
 ) -> Medication {
     Medication(
         id: id,
@@ -43,7 +45,9 @@ func makeMedication(
         currentStock: currentStock,
         lowStockThresholdDays: lowStockThresholdDays,
         createdAt: createdAt,
-        updatedAt: updatedAt
+        updatedAt: updatedAt,
+        expiryDate: expiryDate,
+        nationalCode: nationalCode
     )
 }
 

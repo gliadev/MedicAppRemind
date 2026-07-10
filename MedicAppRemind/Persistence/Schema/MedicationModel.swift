@@ -26,6 +26,20 @@ final class MedicationModel {
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
 
+    /// Nearest expiry across the boxes on hand (FX.S4), from a scanned DataMatrix.
+    /// Optional and defaulted, keeping the schema CloudKit-safe.
+    var expiryDate: Date? = nil
+
+    /// Código Nacional the medication was scanned/created from (FX.S4), so a later scan
+    /// of the same product matches this record. Not `@Attribute(.unique)` — CloudKit
+    /// forbids it; logical dedup happens in the actor.
+    var nationalCode: String? = nil
+
+    /// JSON-encoded `[String]` of the serials of boxes already scanned into this
+    /// medication (FX.S4), or `nil` when none. Stored as `Data?` so the schema stays
+    /// CloudKit-safe. Access it through the decoded `scannedSerials` convenience.
+    var scannedSerialsData: Data? = nil
+
     /// JSON-encoded `[String]` of calendar `eventIdentifier`s mirrored for this
     /// medication (F4.S2), or `nil` when it isn't mirrored. Stored as `Data?` so the
     /// schema stays CloudKit-safe (optional, defaulted). Access it through the decoded
