@@ -23,4 +23,22 @@ enum ScanRouter {
             return MedicineIdentifier(cimaURL: value)
         }
     }
+
+    /// The full parsed code for symbologies that carry more than an identifier — the
+    /// confirmation sheet (FX.S5) needs the expiry and serial a DataMatrix carries.
+    /// `nil` for QR (no GS1 payload) and for an EAN-13/DataMatrix with no extractable CN.
+    static func scannedCode(for value: String, symbology: ScanSymbology) -> ScannedMedicineCode? {
+        switch symbology {
+        case .dataMatrix:
+            let code = GS1Parser.parse(value)
+            return code.nationalCode == nil ? nil : code
+        case .ean13:
+            guard let cn = GS1Parser.nationalCode(fromEAN13: value) else { return nil }
+            var code = ScannedMedicineCode()
+            code.nationalCode = cn
+            return code
+        case .qr:
+            return nil
+        }
+    }
 }

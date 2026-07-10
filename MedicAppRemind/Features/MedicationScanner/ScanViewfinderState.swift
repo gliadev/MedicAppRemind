@@ -8,14 +8,17 @@
 //  to a recoverable state — manual entry or retry — never a dead end.
 //
 
+import Foundation
+
 /// What the scanner screen is currently showing.
 enum ScanViewfinderState: Equatable {
     /// Looking for a code (the resting state).
     case scanning
     /// A code routed to an identifier; CIMA is being queried.
     case looking(MedicineIdentifier)
-    /// Lookup succeeded; the suggestion is ready for the user to confirm.
-    case found(MedicationLookupSuggestion)
+    /// Lookup succeeded; either fully resolved or (QR with several packagings)
+    /// waiting on the user to pick one before the confirmation sheet can show.
+    case found(ScanFoundState)
     /// Camera permission is denied — the user must grant it in Settings.
     case cameraDenied
     /// The lookup failed for lack of connectivity; the same code can be retried.
@@ -24,11 +27,19 @@ enum ScanViewfinderState: Equatable {
     case notFound
 }
 
+/// What a successful CIMA lookup yielded — either a ready confirmation model, or (the
+/// QR route, when the medicine has more than one packaging) the raw choice the sheet
+/// must resolve before showing one.
+enum ScanFoundState: Equatable {
+    case resolved(ScanConfirmationModel)
+    case choosingPresentation(suggestion: MedicationLookupSuggestion, photoURL: URL?, presentations: [CIMAPresentacion])
+}
+
 /// Inputs that move the viewfinder between states.
 enum ScanEvent {
     case cameraPermissionDenied
     case codeDetected(MedicineIdentifier)
-    case lookupSucceeded(MedicationLookupSuggestion)
+    case lookupSucceeded(ScanFoundState)
     case lookupFailed(LookupError)
     /// User asked to retry after an offline failure.
     case retry
@@ -48,8 +59,8 @@ extension ScanViewfinderState {
         case .codeDetected(let identifier):
             guard self == .scanning else { return self }
             return .looking(identifier)
-        case .lookupSucceeded(let suggestion):
-            return .found(suggestion)
+        case .lookupSucceeded(let found):
+            return .found(found)
         case .lookupFailed(let error):
             switch error {
             case .network:

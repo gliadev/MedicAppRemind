@@ -41,6 +41,15 @@ enum ScanMergeDecision: Equatable, Sendable {
     case duplicateBox
 }
 
+/// A read-only preview of `scanMergeDecision`, naming the medication a national code
+/// already matches (if any) — what the confirmation sheet (FX.S5) shows before the user
+/// commits. `medicationID`/`medicationName` are `nil` exactly when `decision == .create`.
+struct ScanMergePreview: Equatable, Sendable {
+    var decision: ScanMergeDecision
+    var medicationID: UUID?
+    var medicationName: String?
+}
+
 /// Decides how a scanned box merges into the store: a new national code creates, a new
 /// serial on a known medication adds stock, an already-recorded serial is a duplicate.
 ///

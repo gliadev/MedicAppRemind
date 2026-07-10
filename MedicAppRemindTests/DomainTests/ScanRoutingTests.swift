@@ -49,6 +49,37 @@ struct ScanRoutingTests {
         #expect(ScanRouter.identifier(for: "https://evil.example/p/123", symbology: .qr) == nil)
     }
 
+    // MARK: - Symbology → full scanned code (FX.S5 — expiry/serial for the confirmation sheet)
+
+    @Test("DataMatrix carries expiry and serial through, order-agnostic across AIs")
+    func dataMatrixCarriesExpiryAndSerial() {
+        let code = ScanRouter.scannedCode(
+            for: "01084700065849341727083110BZ4137\u{1D}21K4G1S4G5A",
+            symbology: .dataMatrix
+        )
+        #expect(code?.nationalCode == "658493")
+        #expect(code?.expiry == "270831")
+        #expect(code?.serial == "K4G1S4G5A")
+    }
+
+    @Test("EAN-13 carries only the national code — no expiry, no serial")
+    func ean13CarriesOnlyNationalCode() {
+        let code = ScanRouter.scannedCode(for: "8470006819579", symbology: .ean13)
+        #expect(code?.nationalCode == "681957")
+        #expect(code?.expiry == nil)
+        #expect(code?.serial == nil)
+    }
+
+    @Test("A foreign EAN-13 yields no scanned code")
+    func foreignEAN13YieldsNoScannedCode() {
+        #expect(ScanRouter.scannedCode(for: "4006381333931", symbology: .ean13) == nil)
+    }
+
+    @Test("QR never carries a GS1 payload")
+    func qrYieldsNoScannedCode() {
+        #expect(ScanRouter.scannedCode(for: "https://cima.aemps.es/cima/dochtml/p/68477/P_68477.html", symbology: .qr) == nil)
+    }
+
     // MARK: - Debounce
 
     @Test("The same value routes once until a different one arrives")

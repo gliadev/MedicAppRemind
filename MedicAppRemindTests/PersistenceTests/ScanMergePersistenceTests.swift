@@ -82,4 +82,47 @@ struct ScanMergePersistenceTests {
         #expect(decision == .create(units: 30))
         #expect(try await store.fetchAll().isEmpty)
     }
+
+    // MARK: - previewScanMerge (FX.S5 — read-only, the confirmation sheet decides before writing)
+
+    @Test("Previewing an unknown national code decides to create, without writing")
+    func previewUnknownCodeCreatesWithoutWriting() async throws {
+        let store = try makeStore()
+
+        let preview = try await store.previewScanMerge(nationalCode: "999999", serial: "SN-9")
+
+        #expect(preview.decision == .create(units: nil))
+        #expect(preview.medicationID == nil)
+        #expect(preview.medicationName == nil)
+        #expect(try await store.fetchAll().isEmpty)
+    }
+
+    @Test("Previewing a known national code with a new serial decides to add stock, without writing")
+    func previewKnownCodeAddsStockWithoutWriting() async throws {
+        let store = try makeStore()
+        try await store.upsert(makeMedication(name: "Paracetamol", currentStock: 5, nationalCode: "681957"))
+
+        let preview = try await store.previewScanMerge(nationalCode: "681957", serial: "SN-1")
+
+        #expect(preview.decision == .addStock(units: nil))
+        #expect(preview.medicationID == medicationFixtureID)
+        #expect(preview.medicationName == "Paracetamol")
+        let med = try #require(try await store.medication(id: medicationFixtureID))
+        #expect(med.currentStock == 5) // untouched — preview never writes
+        #expect(try await store.scannedSerials(medicationID: medicationFixtureID) == [])
+    }
+
+    @Test("Previewing an already-recorded serial decides duplicate, without writing")
+    func previewRecordedSerialIsDuplicateWithoutWriting() async throws {
+        let store = try makeStore()
+        try await store.upsert(makeMedication(name: "Paracetamol", currentStock: 5, nationalCode: "681957"))
+        _ = try await store.applyScanMerge(ScannedBox(nationalCode: "681957", serial: "SN-1", units: 20, expiry: nil))
+
+        let preview = try await store.previewScanMerge(nationalCode: "681957", serial: "SN-1")
+
+        #expect(preview.decision == .duplicateBox)
+        #expect(preview.medicationName == "Paracetamol")
+        let med = try #require(try await store.medication(id: medicationFixtureID))
+        #expect(med.currentStock == 25) // unchanged by the preview call (only the earlier real merge added stock)
+    }
 }

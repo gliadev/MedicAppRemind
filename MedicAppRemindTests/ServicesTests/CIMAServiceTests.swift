@@ -176,3 +176,37 @@ struct MedicationLookupSuggestionTests {
         #expect(suggestion.dosis == nil)
     }
 }
+
+// MARK: - Packaging photo (FX.S5 — visual confirmation in the scan sheet)
+
+@Suite("CIMAMedicamento.photoURL")
+struct CIMAMedicamentoPhotoURLTests {
+
+    private func decodeMedicamento(_ json: String) throws -> CIMAMedicamento {
+        try JSONDecoder().decode(CIMAMedicamento.self, from: Data(json.utf8))
+    }
+
+    @Test("Prefers the box photo (formafarmac) over the materials photo")
+    func prefersFormafarmacPhoto() throws {
+        let medicamento = try decodeMedicamento(CIMAFixtures.medicamento70310)
+
+        #expect(medicamento.photoURL == URL(string: "https://cima.aemps.es/cima/fotos/thumbnails/formafarmac/70310/70310_formafarmac.jpg"))
+    }
+
+    @Test("No fotos array yields no photo, never a crash")
+    func noFotosYieldsNil() throws {
+        let medicamento = try JSONDecoder().decode(CIMAMedicamento.self, from: Data(#"{"nregistro":"1","nombre":"X"}"#.utf8))
+
+        #expect(medicamento.photoURL == nil)
+    }
+
+    @Test("A non-CIMA photo host is refused, defense in depth even though the JSON is CIMA's own")
+    func nonCIMAHostRefused() throws {
+        let medicamento = try JSONDecoder().decode(
+            CIMAMedicamento.self,
+            from: Data(#"{"nregistro":"1","nombre":"X","fotos":[{"tipo":"formafarmac","url":"https://evil.example/x.jpg"}]}"#.utf8)
+        )
+
+        #expect(medicamento.photoURL == nil)
+    }
+}

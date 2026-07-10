@@ -31,6 +31,17 @@ extension MedicationStoreActor {
         return decision
     }
 
+    /// Read-only preview of how a scanned box would merge, without writing — what the
+    /// confirmation sheet (FX.S5) shows before the user taps "Usar datos". Mirrors
+    /// `applyScanMerge`'s decision (`units` doesn't affect which case is chosen, so it's
+    /// omitted here; the sheet already has it from the scan/CIMA lookup).
+    func previewScanMerge(nationalCode: String, serial: String?) throws -> ScanMergePreview {
+        let model = try existingMedication(nationalCode: nationalCode)
+        let stored = model.map { StoredBoxState(recordedSerials: Set($0.scannedSerials)) }
+        let decision = scanMergeDecision(serial: serial, units: nil, against: stored)
+        return ScanMergePreview(decision: decision, medicationID: model?.id, medicationName: model?.name)
+    }
+
     /// The serials of boxes already scanned into this medication (FX.S4), or `[]` when it
     /// has none or the medication is unknown.
     func scannedSerials(medicationID: UUID) throws -> [String] {

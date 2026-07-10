@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct CIMAPresentacion: Decodable, Sendable {
+struct CIMAPresentacion: Decodable, Equatable, Sendable {
     let cn: String
     let nombre: String
     let nregistro: String
