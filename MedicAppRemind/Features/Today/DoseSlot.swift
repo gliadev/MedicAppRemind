@@ -46,6 +46,15 @@ struct DoseSlot: Identifiable, Equatable {
     var isTaken: Bool
 }
 
+extension Collection where Element == DoseSlot {
+    /// The day is complete when there is at least one scheduled dose and every
+    /// one has been taken. An empty day is never "complete" — there is nothing
+    /// to celebrate when no doses are due.
+    var isDayComplete: Bool {
+        !isEmpty && allSatisfy(\.isTaken)
+    }
+}
+
 extension DoseSlot {
     /// All dose slots for `date`, derived from active medication schedules and
     /// matched against the supplied `IntakeLogModel` records for that day.

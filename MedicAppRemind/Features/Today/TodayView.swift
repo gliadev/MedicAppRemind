@@ -49,6 +49,11 @@ private struct TodayContentView: View {
     @Query(sort: \MedicationModel.name) private var medications: [MedicationModel]
     @Query private var todayLogs: [IntakeLogModel]
 
+    /// The day (as a reference-time key) whose completion was already celebrated,
+    /// so the confetti fires at most once per calendar day even across relaunches.
+    @AppStorage("celebratedDayKey") private var celebratedDayKey: Double = 0
+    @State private var isCelebrating = false
+
     let day: Date
 
     init(day: Date) {
@@ -108,6 +113,25 @@ private struct TodayContentView: View {
             }
             .navigationTitle("Hoy")
         }
+        .overlay {
+            if isCelebrating {
+                CelebrationOverlay { isCelebrating = false }
+            }
+        }
+        .onChange(of: slots.isDayComplete) { _, complete in
+            celebrateIfDayJustCompleted(complete)
+        }
+    }
+
+    /// Fires the celebration when the day becomes complete, but only the first
+    /// time it happens on a given day. Marking `celebratedDayKey` up front makes
+    /// re-entrancy (query flicker, foregrounding) a no-op.
+    private func celebrateIfDayJustCompleted(_ complete: Bool) {
+        guard complete else { return }
+        let key = day.timeIntervalSinceReferenceDate
+        guard celebratedDayKey != key else { return }
+        celebratedDayKey = key
+        isCelebrating = true
     }
 
     // MARK: - Actions
