@@ -46,6 +46,11 @@ struct RootView: View {
             Tab("Medicamentos", systemImage: "pills") {
                 MedicationListView()
             }
+            // TEMPORAL F10.S2 — spike del parser en device; eliminar junto con
+            // Features/Spike al anotar el resultado en el ADR.
+            Tab("Spike", systemImage: "wand.and.stars") {
+                DraftParserSpikeView()
+            }
         }
         .modelContainer(container)
         .environment(router)
