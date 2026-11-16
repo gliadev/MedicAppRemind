@@ -15,7 +15,8 @@ struct FoundationModelsDraftParser: MedicationDraftParsing {
 
     /// Static role prompt. English on purpose (it is code, not UI); the
     /// person's text is passed verbatim as the prompt, in Spanish or English.
-    private static let instructions = """
+    /// Internal (not private) only while the F10.S2 spike reuses it.
+    static let instructions = """
         You extract structured data about ONE medication from a short free-text \
         description a person writes or dictates, in Spanish or English.
         Rules:

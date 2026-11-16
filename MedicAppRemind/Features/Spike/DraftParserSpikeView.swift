@@ -26,6 +26,7 @@ struct DraftParserSpikeView: View {
     ]
 
     private let parser = FoundationModelsDraftParser()
+    private let diagnostics = DraftParserSpikeDiagnostics()
 
     @State private var results: [String] = []
     @State private var runID = 0
@@ -36,6 +37,8 @@ struct DraftParserSpikeView: View {
             List {
                 Section("Estado") {
                     LabeledContent("Modelo disponible", value: parser.isAvailable ? "Sí" : "No")
+                    LabeledContent("Availability", value: diagnostics.availabilityDescription)
+                        .font(.caption.monospaced())
                 }
                 Section("Resultados") {
                     if results.isEmpty {
@@ -74,12 +77,7 @@ struct DraftParserSpikeView: View {
         for phrase in Self.phrases {
             let start = clock.now
             var line = "» \(phrase)\n"
-            do {
-                let draft = try await parser.parseDraft(from: phrase)
-                line += describe(draft)
-            } catch {
-                line += "✗ ERROR couldNotParse"
-            }
+            line += await diagnostics.rawParse(phrase)
             let elapsed = start.duration(to: clock.now)
             line += "\n⏱ \(elapsed.formatted(.units(allowed: [.seconds, .milliseconds], width: .narrow)))"
             results.append(line)
