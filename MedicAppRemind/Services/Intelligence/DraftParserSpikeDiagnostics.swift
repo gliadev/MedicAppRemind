@@ -13,8 +13,9 @@ import FoundationModels
 struct DraftParserSpikeDiagnostics {
 
     /// The exact availability state, verbatim, for the spike report.
+    /// Same model instance as production (permissive guardrails).
     var availabilityDescription: String {
-        switch SystemLanguageModel.default.availability {
+        switch FoundationModelsDraftParser.makeModel().availability {
         case .available:
             return "available"
         case .unavailable(.deviceNotEligible):
@@ -28,17 +29,30 @@ struct DraftParserSpikeDiagnostics {
         }
     }
 
-    /// Same call as the production parser but WITHOUT collapsing the error:
-    /// returns a textual dump of the generated mirror or of the raw framework
-    /// error. Never ships beyond the spike.
+    /// v4 — runs the REAL production parser end to end (String + JSON decode)
+    /// and shows the raw model text next to the decoded Domain draft, so the
+    /// device matrix for the ADR captures both.
     func rawParse(_ text: String) async -> String {
-        let session = LanguageModelSession(instructions: FoundationModelsDraftParser.instructions)
+        let raw = await rawStringDump(text)
+        let parsed: String
         do {
-            let response = try await session.respond(
-                to: text,
-                generating: GeneratedMedicationDraft.self
-            )
-            return String(describing: response.content)
+            let draft = try await FoundationModelsDraftParser().parseDraft(from: text)
+            parsed = String(describing: draft)
+        } catch {
+            parsed = "ERROR: \(String(describing: error))"
+        }
+        return "RAW → \(raw)\n\nPARSED → \(parsed)"
+    }
+
+    /// The same call the production parser makes, without decoding.
+    private func rawStringDump(_ text: String) async -> String {
+        let session = LanguageModelSession(
+            model: FoundationModelsDraftParser.makeModel(),
+            instructions: FoundationModelsDraftParser.instructions
+        )
+        do {
+            let response = try await session.respond(to: text)
+            return response.content
         } catch {
             return "RAW ERROR: \(String(describing: error))\n→ \(error.localizedDescription)"
         }
