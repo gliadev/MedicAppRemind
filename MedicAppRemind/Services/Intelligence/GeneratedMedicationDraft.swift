@@ -2,37 +2,25 @@
 //  GeneratedMedicationDraft.swift
 //  MedicAppRemind
 //
-//  F10.S2 — @Generable mirror of the Domain's MedicationDraft. This is the
-//  only shape the model ever fills in; Domain types stay free of
-//  FoundationModels. Guide descriptions are code, not UI — English on purpose.
-//  Every field is optional: the model must omit what the text doesn't say.
+//  F10.S2 — Mirror of the Domain's MedicationDraft, decoded from the model's
+//  plain-text JSON response. It was @Generable guided generation until the
+//  2026-11-16 spike proved guided generation always hits default guardrails
+//  with medication text; only String responses honor the permissive mode
+//  (see ADR05). Decoding is tolerant: an unrecognizable field is dropped,
+//  never invented, and never breaks the rest of the draft.
 //
 
 import Foundation
-import FoundationModels
 
-@Generable(description: "Structured data about one medication, extracted from a person's free-text description")
 struct GeneratedMedicationDraft {
-    @Guide(description: "The medication name only, without strength or dosage, exactly as mentioned. Omit if no medication is named.")
     var name: String?
-
-    @Guide(description: "The dose strength exactly as written, for example '600 mg'. Omit if not mentioned.")
     var doseLabel: String?
-
-    @Guide(description: "Units (pills, capsules, measures) taken per single dose. Omit if not mentioned.", .range(0.25...10.0))
     var pillsPerDose: Double?
-
-    @Guide(description: "The physical form of the medication. Omit if not mentioned.")
     var form: GeneratedMedicationForm?
-
-    @Guide(description: "Units the person says they currently have in stock. Omit if not mentioned.", .range(0.0...10_000.0))
     var currentStock: Double?
-
-    @Guide(description: "The dosing schedule. Omit if the text mentions no schedule.")
     var schedule: GeneratedSchedule?
 }
 
-@Generable(description: "The physical form of a medication")
 enum GeneratedMedicationForm {
     case pill
     case capsule
@@ -42,38 +30,24 @@ enum GeneratedMedicationForm {
     case other
 }
 
-@Generable(description: "When and how often the medication is taken")
 struct GeneratedSchedule {
-    @Guide(description: "Times of day explicitly mentioned. Omit if none are mentioned.")
     var timesOfDay: [GeneratedTime]?
-
-    @Guide(description: "How the doses repeat across days")
     var kind: GeneratedFrequencyKind
-
-    @Guide(description: "Hours between doses, only when kind is everyNHours.", .range(1...24))
     var intervalHours: Int?
-
-    @Guide(description: "Days of the week, only when kind is weekdays.")
     var weekdays: [GeneratedWeekday]?
 }
 
-@Generable(description: "How doses repeat across days")
 enum GeneratedFrequencyKind {
     case daily
     case everyNHours
     case weekdays
 }
 
-@Generable(description: "A time of day on the 24-hour clock")
-struct GeneratedTime {
-    @Guide(description: "Hour of day", .range(0...23))
+struct GeneratedTime: Decodable {
     var hour: Int
-
-    @Guide(description: "Minute of the hour", .range(0...59))
     var minute: Int
 }
 
-@Generable(description: "A day of the week")
 enum GeneratedWeekday {
     case monday
     case tuesday
@@ -82,6 +56,114 @@ enum GeneratedWeekday {
     case friday
     case saturday
     case sunday
+}
+
+// MARK: - Decoding the model's text output
+
+extension GeneratedMedicationDraft: Decodable {
+
+    /// The whole draft decoded from the model's raw text response. The model
+    /// is instructed to answer with bare JSON but routinely adds code fences
+    /// or prose, so the object is extracted between the outermost braces.
+    static func decode(fromModelOutput output: String) throws -> GeneratedMedicationDraft {
+        guard let start = output.firstIndex(of: "{"),
+              let end = output.lastIndex(of: "}"),
+              start <= end else {
+            throw DraftParserError.couldNotParse
+        }
+        let data = Data(output[start...end].utf8)
+        return try JSONDecoder().decode(GeneratedMedicationDraft.self, from: data)
+    }
+
+    /// A draft with no extracted field at all — the parser treats it as the
+    /// single failure path ("the text does not describe a medication").
+    var isEmpty: Bool {
+        name == nil && doseLabel == nil && pillsPerDose == nil
+            && form == nil && currentStock == nil && schedule == nil
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case name, doseLabel, pillsPerDose, form, currentStock
+        case frequencyKind, everyNHours, weekdays, timesOfDay
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = (try? container.decodeIfPresent(String.self, forKey: .name)) ?? nil
+        doseLabel = (try? container.decodeIfPresent(String.self, forKey: .doseLabel)) ?? nil
+        pillsPerDose = (try? container.decodeIfPresent(Double.self, forKey: .pillsPerDose)) ?? nil
+        currentStock = (try? container.decodeIfPresent(Double.self, forKey: .currentStock)) ?? nil
+
+        let formName = (try? container.decodeIfPresent(String.self, forKey: .form)) ?? nil
+        form = formName.flatMap(GeneratedMedicationForm.init(tolerant:))
+
+        let kindName = (try? container.decodeIfPresent(String.self, forKey: .frequencyKind)) ?? nil
+        let interval = (try? container.decodeIfPresent(Int.self, forKey: .everyNHours)) ?? nil
+        let dayNames = (try? container.decodeIfPresent([String].self, forKey: .weekdays)) ?? nil
+        let times = (try? container.decodeIfPresent([GeneratedTime].self, forKey: .timesOfDay)) ?? nil
+
+        if let kind = kindName.flatMap(GeneratedFrequencyKind.init(tolerant:)) {
+            schedule = GeneratedSchedule(
+                timesOfDay: times,
+                kind: kind,
+                intervalHours: interval,
+                weekdays: dayNames.map { $0.compactMap(GeneratedWeekday.init(tolerant:)) }
+            )
+        } else {
+            // Unknown or missing frequency (the spike saw "weekly"): dropping
+            // the schedule keeps the rest of the draft usable — never guessed.
+            schedule = nil
+        }
+    }
+}
+
+// MARK: - Tolerant token parsing (ES + EN, accent- and case-insensitive)
+
+private extension String {
+    var normalizedToken: String {
+        folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "es_ES"))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+extension GeneratedFrequencyKind {
+    init?(tolerant name: String) {
+        switch name.normalizedToken {
+        case "daily":       self = .daily
+        case "everynhours": self = .everyNHours
+        case "weekdays":    self = .weekdays
+        default:            return nil
+        }
+    }
+}
+
+extension GeneratedWeekday {
+    init?(tolerant name: String) {
+        switch name.normalizedToken {
+        case "monday", "lunes":        self = .monday
+        case "tuesday", "martes":      self = .tuesday
+        case "wednesday", "miercoles": self = .wednesday
+        case "thursday", "jueves":     self = .thursday
+        case "friday", "viernes":      self = .friday
+        case "saturday", "sabado":     self = .saturday
+        case "sunday", "domingo":      self = .sunday
+        default:                       return nil
+        }
+    }
+}
+
+extension GeneratedMedicationForm {
+    init?(tolerant name: String) {
+        switch name.normalizedToken {
+        case "pill", "pastilla":        self = .pill
+        case "capsule", "capsula":      self = .capsule
+        case "tablet", "comprimido":    self = .tablet
+        case "liquid", "liquido", "jarabe": self = .liquid
+        case "injection", "inyeccion":  self = .injection
+        case "other", "otro", "otra":   self = .other
+        default:                        return nil
+        }
+    }
 }
 
 // MARK: - Pure mapping onto the Domain draft
