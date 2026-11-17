@@ -26,7 +26,15 @@ struct MedicationEditorView: View {
     @State private var notificationsEnabled = true
     @State private var showingTimePicker = false
     @State private var showingScanner = false
+    @State private var showingDescribe = false
     @State private var pickerTime: Date
+
+    // Describe-sourced fields (F10.S3): the drafted form has no visible control
+    // (decision 7 — editor default unless drafted), and the notes only carry the
+    // dictated text when the parse failed. Both apply on save, never before.
+    @State private var draftedForm: MedicationForm?
+    @State private var draftedNotes: String?
+    @Environment(\.draftParser) private var draftParser
 
     // Pauta (AX-04): editing mode + the values each mode needs.
     @State private var kind: ScheduleKind
@@ -116,6 +124,9 @@ struct MedicationEditorView: View {
             .sheet(isPresented: $showingScanner) {
                 MedicationScannerScreen(onResult: applyScan)
             }
+            .sheet(isPresented: $showingDescribe) {
+                DescribeMedicationSheet(onResult: applyDescription)
+            }
             .alert(
                 "Stock actualizado",
                 isPresented: Binding(get: { stockAddedMessage != nil }, set: { if !$0 { stockAddedMessage = nil } })
@@ -150,6 +161,50 @@ struct MedicationEditorView: View {
         }
     }
 
+    /// Applies the describe sheet's outcome (F10.S3). `.prefill` only fills the
+    /// fields the draft carried — anything already typed and every editor default
+    /// stays put, and nothing is written until "Guardar". `.failed` preserves the
+    /// person's text into the notes applied on save, so nothing dictated is lost.
+    private func applyDescription(_ result: DescribeFlowResult) {
+        switch result {
+        case .prefill(let prefill):
+            if let value = prefill.name { name = value }
+            if let value = prefill.doseLabel { doseLabel = value }
+            if let value = prefill.pillsPerDose {
+                pillsPerDoseText = value.formatted(.number.precision(.fractionLength(0...2)))
+            }
+            if let value = prefill.currentStock {
+                currentStockText = value.formatted(.number.precision(.fractionLength(0...2)))
+            }
+            if let value = prefill.form { draftedForm = value }
+            if let schedule = prefill.schedule {
+                kind = ScheduleKind(schedule.frequency)
+                selectedWeekdays = schedule.frequency.selectedWeekdays
+                if let hours = schedule.frequency.intervalHours { intervalHours = hours }
+                if case .everyNHours = schedule.frequency {
+                    // The drafted anchor ("primera toma") drives the interval rhythm.
+                    if let anchor = schedule.times.first {
+                        startTime = Calendar.current.date(
+                            bySettingHour: anchor.hour ?? 8,
+                            minute: anchor.minute ?? 0,
+                            second: 0,
+                            of: .now
+                        ) ?? startTime
+                    }
+                } else {
+                    times = schedule.times
+                }
+            }
+            AccessibilityNotification.Announcement(
+                String(localized: "Campos rellenados a partir de tu descripción. Revísalos antes de guardar.")
+            ).post()
+            focusedField = .name
+        case .failed(let notesText):
+            let trimmed = notesText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { draftedNotes = trimmed }
+        }
+    }
+
     // MARK: - Sections
 
     @ViewBuilder
@@ -159,6 +214,14 @@ struct MedicationEditorView: View {
                 showingScanner = true
             }
             .accessibilityHint("Usa la cámara para rellenar el nombre y la dosis desde la caja")
+
+            // Hidden — never disabled — without Apple Intelligence (F10 decision 3).
+            if showsDescribeEntry(draftParser) {
+                Button("Describir", systemImage: "wand.and.stars") {
+                    showingDescribe = true
+                }
+                .accessibilityHint("Escribe o dicta el medicamento y la pauta para rellenar los campos")
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Nombre del medicamento")
@@ -503,8 +566,8 @@ struct MedicationEditorView: View {
         let medication = Medication(
             id: existingMedication?.id ?? UUID(),
             name: name,
-            notes: existingMedication?.notes ?? "",
-            form: existingMedication?.form ?? .pill,
+            notes: draftedNotes ?? existingMedication?.notes ?? "",
+            form: draftedForm ?? existingMedication?.form ?? .pill,
             doseLabel: doseLabel,
             pillsPerDose: pillsPerDose,
             currentStock: currentStock,
