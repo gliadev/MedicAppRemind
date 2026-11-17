@@ -41,6 +41,7 @@ struct DescribeMedicationSheet: View {
                     if state == .failed {
                         Text(DraftParserError.couldNotParse.errorDescription ?? "")
                             .foregroundStyle(.red)
+                            .accessibilityLabel("Error: \(DraftParserError.couldNotParse.errorDescription ?? "")")
                     } else {
                         Text("Con tus palabras: qué tomas, cuándo y cuántas te quedan. Tú revisas los datos antes de guardar.")
                     }
