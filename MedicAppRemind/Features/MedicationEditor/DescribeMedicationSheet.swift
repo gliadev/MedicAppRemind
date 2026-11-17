@@ -22,19 +22,31 @@ struct DescribeMedicationSheet: View {
     @State private var state = DescribeSheetState.idle
     @State private var parseTask: Task<Void, Never>?
 
+    /// Three-ish body lines at standard type; grows with Dynamic Type (AX).
+    @ScaledMetric(relativeTo: .body) private var editorMinHeight: CGFloat = 88
+
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    TextField(
-                        "Ej. Ibuprofeno 600, una cada 8 horas, me quedan 30",
-                        text: $text,
-                        axis: .vertical
-                    )
-                    .lineLimit(3...6)
-                    .disabled(state == .loading)
-                    .accessibilityLabel("Descripción del medicamento")
-                    .accessibilityHint("Escribe o dicta el medicamento, la pauta y las pastillas que te quedan")
+                    // TextEditor, not TextField(axis: .vertical): the multiline
+                    // TextField drops keyboard dictation after the first letter
+                    // on device (F10.S4 matrix finding; Apple Forums #128721).
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $text)
+                            .frame(minHeight: editorMinHeight)
+                            .disabled(state == .loading)
+                            .accessibilityLabel("Descripción del medicamento")
+                            .accessibilityHint("Escribe o dicta el medicamento, la pauta y las pastillas que te quedan")
+                        if text.isEmpty {
+                            Text("Ej. Ibuprofeno 600, una cada 8 horas, me quedan 30")
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 8)
+                                .padding(.leading, 5)
+                                .allowsHitTesting(false)
+                                .accessibilityHidden(true)
+                        }
+                    }
                 } header: {
                     Text("Describe tu medicación")
                 } footer: {
